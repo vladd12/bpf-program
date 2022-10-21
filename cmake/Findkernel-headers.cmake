@@ -1,6 +1,4 @@
-# Find the kernel headers for the running kernel release
-# This is used to find a "linux/version.h" matching the running kernel.
-
+# Linux kernel version
 execute_process(
         COMMAND uname -r
         OUTPUT_VARIABLE KERNEL_RELEASE
@@ -30,4 +28,3 @@ else (KERNELHEADERS_DIR)
 endif (KERNELHEADERS_DIR)
 
 mark_as_advanced(KERNELHEADERS_FOUND)
-
