@@ -64,3 +64,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBPF_LIBRARIES} ${LIBBCC_LIBRAR
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
     add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)
 endif()
+
+# Installing eBPF sources in directory with program
+set(BPF_SOURCE_DIR "${PROJECT_SOURCE_DIR}/bpf")
+install(
+  FILES
+    ${BPF_SOURCE_DIR}/ethernet-parse.c
+  DESTINATION
+    ${CMAKE_BINARY_DIR}/bpf
+)
