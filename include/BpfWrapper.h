@@ -2,19 +2,19 @@
 
 #include <bcc/BPF.h>
 #include <bpf/libbpf.h>
+#include <common.h>
 #include <fstream>
-// temp
-#include <iostream>
 
 class BpfWrapper
 {
 private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
 
-    auto read_file(const std::string_view path) -> std::string
+    /// \brief Reading file specified by filepath in std::string.
+    std::string read_file(const std::string_view filepath)
     {
         constexpr auto read_size = std::size_t(4096);
-        auto stream = std::ifstream(path.data());
+        auto stream = std::ifstream(filepath.data());
         stream.exceptions(std::ios_base::badbit);
 
         auto out = std::string();
@@ -31,13 +31,14 @@ public:
     {
     }
 
-    ebpf::StatusTuple initByFile(const std::string_view filename)
+    /// \brief Initializations eBPF program from file specified by filepath.
+    ebpf::StatusTuple initByFile(const std::string_view filepath)
     {
-        auto bpfProgText = read_file(filename);
-        std::cout << "\n\n\nProgram text:\n" << bpfProgText << '\n';
+        auto bpfProgText = read_file(filepath);
         return bpfPtr->init(bpfProgText);
     }
 
+    /// \brief Returns eBPF object stored in ebpf::BPF smart pointer.
     ebpf::BPF *getBpfObject()
     {
         return bpfPtr.get();
@@ -52,9 +53,9 @@ public:
             if (result >= 0)
                 return ebpf::StatusTuple::OK();
             else
-                return ebpf::StatusTuple(-1, "Failed attaching function to socket");
+                return ebpf::StatusTuple(-1, "bpf: Failed attaching function %i to socket", function);
         }
         else
-            return ebpf::StatusTuple(-1, "Failed open socket for device %s", device.c_str());
+            return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", device.c_str());
     }
 };

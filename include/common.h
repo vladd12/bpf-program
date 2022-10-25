@@ -1,11 +1,11 @@
 #pragma once
 
+#include <bcc/bcc_exception.h>
 #include <cstdint>
-#include <ctime>
+#include <iostream>
 #include <linux/bpf.h>
 #include <linux/if_link.h>
 #include <linux/perf_event.h>
-#include <linux/time.h>
 
 namespace types
 {
@@ -27,19 +27,9 @@ enum XdpFlags : std::uint8_t
     REPLACE = XDP_FLAGS_REPLACE
 };
 
-constexpr clockid_t ClockMono = CLOCK_MONOTONIC;
-
-void test()
-{
-    timespec val;
-    if (clock_gettime(ClockMono, &val) == 0)
-    {
-        // its okay
-    }
-    else
-    {
-        // its not okay
-    }
-}
-
 } // namespace types
+
+void inline printStatusMsg(const ebpf::StatusTuple &status)
+{
+    std::cout << status.msg() << '\n';
+}
