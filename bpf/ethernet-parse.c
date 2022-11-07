@@ -5,6 +5,21 @@
 #define IP_TCP 	6
 #define ETH_HLEN 14
 
+//#define TRUE 1
+//#define FALSE 0
+//
+// Comparing MAC adresses
+//int compare_mac(u8 *lh_Mac, u8 *rh_Mac) {
+//    int flag = TRUE;
+//    for (u8 i = 0; i < ETH_ALEN; i++) {
+//        if (lh_Mac[i] != rh_Mac[i]) {
+//            flag = FALSE;
+//            break;
+//        }
+//    }
+//    return flag;
+//}
+
 /*eBPF program.
   Filter IP and TCP packets, having payload not empty
   and containing "HTTP", "GET", "POST" ... as first bytes of payload
@@ -15,8 +30,18 @@
 */
 int http_filter(struct __sk_buff *skb) {
     u8 *cursor = 0;
+    // current ethernet device MAC address
+    // NOTE: value RECEIVER_MAC declared by user programm
+    u64 receiverMac = RECEIVER_MAC;
 
     struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
+    u64 destinationMac = ethernet->dst;
+
+    //filter frames with destination MAC address
+    if (receiverMac != destinationMac) {
+        goto DROP;
+    }
+
     //filter IP packets (ethernet type = 0x0800)
     if (!(ethernet->type == 0x0800)) {
         goto DROP;

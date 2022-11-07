@@ -13,7 +13,7 @@
 int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPath, //
     const std::string_view functionName, const std::string_view deviceName)
 {
-    auto executeStatus = bpf->initByFile(programPath.data());
+    auto executeStatus = bpf->initByFile(programPath, deviceName);
     if (executeStatus.ok())
     {
         int fd_func = -1, sock_fd = -1;
@@ -21,8 +21,8 @@ int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPa
         executeStatus = bpfObject->load_func(functionName.data(), BPF_PROG_TYPE_SOCKET_FILTER, fd_func);
         if (executeStatus.ok())
         {
-            // name of device may be eth0, eth1, etc (see ifconfig or ip -a)...
-            executeStatus = bpf->attach_raw_socket(deviceName.data(), fd_func, sock_fd);
+            // name of device may be eth0, eth1, etc (see ifconfig or ip a)...
+            executeStatus = bpf->attachRawSocket(deviceName.data(), fd_func, sock_fd);
             if (executeStatus.ok())
                 return sock_fd;
         }
@@ -47,11 +47,12 @@ void test(int &sock)
 
 void printMacAddr(const std::uint8_t macAddr[])
 {
-    std::cout << "0x";
-    for (auto i = 0; i < ETH_ALEN; i++)
-        printf("%02X", macAddr[i]);
-    // std::cout << macAddr[i];
-    std::cout << '\n';
+    printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
+
+    //    std::cout << "0x";
+    //    for (auto i = 0; i < ETH_ALEN; i++)
+    //        printf("%02X", macAddr[i]);
+    //    std::cout << '\n';
 }
 
 void test2(int &sock)
@@ -82,7 +83,7 @@ int main()
     auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "http_filter", "enp0s3");
     if (sock >= 0)
     {
-        test(sock);
+        // test(sock);
         test2(sock);
     }
 
