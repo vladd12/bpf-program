@@ -32,5 +32,5 @@ unix*
 
 # QtCreator
 *.autosave
-CMakeLists.txt.user*
+*.user
 

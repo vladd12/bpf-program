@@ -11,7 +11,7 @@ private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
 
     /// \brief Reading file specified by filepath in std::string.
-    std::string read_file(const std::string_view filepath)
+    std::string read_file(const std::string_view &filepath)
     {
         constexpr auto read_size = std::size_t(4096);
         auto stream = std::ifstream(filepath.data());
