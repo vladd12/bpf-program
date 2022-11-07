@@ -48,11 +48,6 @@ void test(int &sock)
 void printMacAddr(const std::uint8_t macAddr[])
 {
     printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
-
-    //    std::cout << "0x";
-    //    for (auto i = 0; i < ETH_ALEN; i++)
-    //        printf("%02X", macAddr[i]);
-    //    std::cout << '\n';
 }
 
 void test2(int &sock)
@@ -80,33 +75,11 @@ int main()
 {
     using namespace std;
     auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "http_filter", "enp0s3");
+    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", "enp0s3");
     if (sock >= 0)
     {
         // test(sock);
         test2(sock);
     }
-
-    /*
-    ifreq req;
-    strncpy(req.ifr_ifrn.ifrn_name, "enp0s3", IFNAMSIZ);
-
-    auto stat = ioctl(sock, SIOCGIFFLAGS, &req);
-    if (stat < 0)
-        std::cout << "SIOC GIF FLAGS Fail\n\n";
-
-    stat = ioctl(sock, SIOCSIFFLAGS, &req);
-    if (stat < 0)
-        std::cout << "SIOC SIF FLAGS Fail\n\n";
-
-    stat = ioctl(sock, SIOCGIFINDEX, &req);
-    if (stat < 0)
-        std::cout << "SIOC GIF INDEX Fail\n\n";
-
-    sockaddr_ll saddr;
-    saddr.sll_family = PF_PACKET;
-    saddr.sll_protocol = htons(ETH_P_ALL);
-    */
-
     return 0;
 }

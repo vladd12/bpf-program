@@ -11,8 +11,10 @@ private:
     /// \brief Reading file specified by filepath in std::string.
     std::string read_file(const std::string_view &filepath);
 
+    /// \brief Replacing all substrings "what" with "with".
     std::size_t replace_all(std::string &inout, std::string_view what, std::string_view with);
 
+    /// \brief Removing all substrings "what".
     std::size_t remove_all(std::string &inout, std::string_view what);
 
 public:

@@ -2,33 +2,21 @@
 #include <net/sock.h>
 #include <bcc/proto.h>
 
-#define IP_TCP 	6
-#define ETH_HLEN 14
+//#define IP_TCP 6
+//#define ETH_HLEN 14
+//#define IP_PROTO 0x0800   // 0x0800 - IP packet protocol
+#define IEC_PROTO 0x8100  // 0x8100 - IEC 61850 protocol
+#define SV_PRIORITY 0b100 // SV protocol user priority
 
-//#define TRUE 1
-//#define FALSE 0
-//
-// Comparing MAC adresses
-//int compare_mac(u8 *lh_Mac, u8 *rh_Mac) {
-//    int flag = TRUE;
-//    for (u8 i = 0; i < ETH_ALEN; i++) {
-//        if (lh_Mac[i] != rh_Mac[i]) {
-//            flag = FALSE;
-//            break;
-//        }
-//    }
-//    return flag;
-//}
-
-/*eBPF program.
-  Filter IP and TCP packets, having payload not empty
-  and containing "HTTP", "GET", "POST" ... as first bytes of payload
-  if the program is loaded as PROG_TYPE_SOCKET_FILTER
-  and attached to a socket
-  return  0 -> DROP the packet
-  return -1 -> KEEP the packet and return it to user space (userspace can read it from the socket_fd )
+/* eBPF program.
+   Filter IP and TCP packets, having payload not empty
+   and containing "HTTP", "GET", "POST" ... as first bytes of payload
+   if the program is loaded as PROG_TYPE_SOCKET_FILTER
+   and attached to a socket
+   return  0 -> DROP the packet
+   return -1 -> KEEP the packet and return it to user space (userspace can read it from the socket_fd )
 */
-int http_filter(struct __sk_buff *skb) {
+int iec61850_filter(struct __sk_buff *skb) {
     u8 *cursor = 0;
     // current ethernet device MAC address
     // NOTE: value RECEIVER_MAC declared by user programm
@@ -37,18 +25,25 @@ int http_filter(struct __sk_buff *skb) {
     struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
     u64 destinationMac = ethernet->dst;
 
-    //filter frames with destination MAC address
+    // filter frames with destination MAC address
     if (receiverMac != destinationMac) {
         goto DROP;
     }
 
-    //filter IP packets (ethernet type = 0x0800)
-    if (!(ethernet->type == 0x0800)) {
+    // filter frames with protocol type
+    if (ethernet->type != IEC_PROTO) {
         goto DROP;
     }
 
+    // filter frames with SV user priority
+    struct dot1q_t *iec = cursor_advance(cursor, sizeof(*iec));
+    if (iec->pri != SV_PRIORITY) {
+        goto DROP;
+    }
+
+    /*
     struct ip_t *ip = cursor_advance(cursor, sizeof(*ip));
-    //filter TCP packets (ip next protocol = 0x06)
+    // filter TCP packets (ip next protocol = 0x06)
     if (ip->nextp != IP_TCP) {
         goto DROP;
     }
@@ -69,7 +64,7 @@ int http_filter(struct __sk_buff *skb) {
     }
 
     //shift cursor forward for dynamic ip header size
-    void *_ = cursor_advance(cursor, (ip_header_length-sizeof(*ip)));
+    void *_ = cursor_advance(cursor, (ip_header_length - sizeof(*ip)));
 
     struct tcp_t *tcp = cursor_advance(cursor, sizeof(*tcp));
 
@@ -125,6 +120,8 @@ int http_filter(struct __sk_buff *skb) {
     }
     //no HTTP match
     goto DROP;
+    */
+    goto KEEP;
 
     //keep the packet and send it to userspace returning -1
     KEEP:
