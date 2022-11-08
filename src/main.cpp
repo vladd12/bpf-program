@@ -75,7 +75,10 @@ int main()
 {
     using namespace std;
     auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", "enp0s3");
+    auto ifaceName = std::string("");
+    std::cout << "Please, enter ethrnet interface name: ";
+    std::cin >> ifaceName;
+    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", ifaceName);
     if (sock >= 0)
     {
         // test(sock);
