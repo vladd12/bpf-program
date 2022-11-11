@@ -2,6 +2,7 @@
 
 #include <bcc/BPF.h>
 #include <common.h>
+#include <functional>
 
 class BpfWrapper
 {
@@ -24,10 +25,14 @@ public:
     explicit BpfWrapper();
 
     /// \brief Initializations eBPF program from file specified by filepath.
-    ebpf::StatusTuple initByFile(const std::string_view &programPath, const std::string_view &deviceName);
+    ebpf::StatusTuple initByFile(const std::string_view &programPath);
 
     /// \brief Returns eBPF object stored in ebpf::BPF smart pointer.
     ebpf::BPF *getBpfObject();
+
+    ebpf::StatusTuple openPerfBuf(const std::string_view bufName, std::function<void(void *, void *, int)> bufReader);
+
+    ebpf::StatusTuple closePerfBuf(const std::string_view bufName);
 
     /// \brief Attaching raw socket for listening ethernbet device, specified by device name.
     ebpf::StatusTuple attachRawSocket(const std::string &deviceName, const int function, int &socket);

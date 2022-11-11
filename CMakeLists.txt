@@ -69,7 +69,8 @@ endif()
 set(BPF_SOURCE_DIR "${PROJECT_SOURCE_DIR}/bpf")
 install(
   FILES
-    ${BPF_SOURCE_DIR}/ethernet-parse.c
+    ${BPF_SOURCE_DIR}/eth-parse-var1.c
+    ${BPF_SOURCE_DIR}/eth-parse-var2.c
   DESTINATION
     ${CMAKE_BINARY_DIR}/bpf
 )

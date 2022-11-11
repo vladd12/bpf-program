@@ -62,21 +62,25 @@ ebpf::StatusTuple BpfWrapper::socket_configure(int &socket, const char *ifaceNam
         return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCGIFFLAGS' I/O Control flag for socket");
 }
 
-ebpf::StatusTuple BpfWrapper::initByFile(const std::string_view &programPath, const std::string_view &deviceName)
+ebpf::StatusTuple BpfWrapper::initByFile(const std::string_view &programPath)
 {
     auto bpfProgText = read_file(programPath);
-    auto deviceAddressFilepath = "/sys/class/net/" + std::string(deviceName.data()) + "/address";
-    auto addressText = read_file(deviceAddressFilepath);
-    remove_all(addressText, ":");
-    remove_all(addressText, "\n");
-    // Replacing text
-    replace_all(bpfProgText, "RECEIVER_MAC", "0x" + addressText);
     return bpfPtr->init(bpfProgText);
 }
 
 ebpf::BPF *BpfWrapper::getBpfObject()
 {
     return bpfPtr.get();
+}
+
+ebpf::StatusTuple BpfWrapper::openPerfBuf(const std::string_view bufName, std::function<void(void *, void *, int)> bufReader)
+{
+    return bpfPtr->open_perf_buffer(bufName.data(), bufReader.target<void(void *, void *, int)>());
+}
+
+ebpf::StatusTuple BpfWrapper::closePerfBuf(const std::string_view bufName)
+{
+    return bpfPtr->close_perf_buffer(bufName.data());
 }
 
 ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &deviceName, const int function, int &socket)

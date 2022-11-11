@@ -12,7 +12,7 @@
 int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPath, //
     const std::string_view functionName, const std::string_view deviceName)
 {
-    auto executeStatus = bpf->initByFile(programPath, deviceName);
+    auto executeStatus = bpf->initByFile(programPath);
     if (executeStatus.ok())
     {
         int fd_func = -1, sock_fd = -1;
@@ -28,20 +28,6 @@ int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPa
     }
     printStatusMsg(executeStatus);
     return -1;
-}
-
-void test(int &sock)
-{
-    // Вывод данных о сокете
-    auto fd = sock;
-    auto optval = int(0);
-    auto optlen = socklen_t(sizeof(optval));
-    auto family = getsockopt(fd, SOL_SOCKET, SO_DOMAIN, &optval, &optlen);
-    std::cout << family << ' ' << optval << ' ' << AF_PACKET << '\n';
-    auto type = getsockopt(fd, SOL_SOCKET, SO_TYPE, &optval, &optlen);
-    std::cout << type << ' ' << optval << ' ' << SOCK_RAW << '\n';
-    auto proto = getsockopt(fd, SOL_SOCKET, SO_PROTOCOL, &optval, &optlen);
-    std::cout << proto << ' ' << optval << ' ' << htons(ETH_P_ALL) << "\n\n";
 }
 
 void printMacAddr(const std::uint8_t macAddr[])
@@ -70,18 +56,45 @@ void test2(int &sock)
     delete[] buffer;
 }
 
+constexpr std::size_t PACKET_BUF_SIZE = 2048;
+struct packet_buf
+{
+    std::uint8_t data[PACKET_BUF_SIZE];
+};
+
 int main()
 {
     using namespace std;
     auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    auto ifaceName = std::string("");
-    std::cout << "Please, enter ethrnet interface name: ";
-    std::cin >> ifaceName;
-    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", ifaceName);
-    if (sock >= 0)
-    {
-        // test(sock);
-        test2(sock);
-    }
+    bpf->initByFile("bpf/eth-parse-var2.c");
+
+    // auto ifaceName = std::string("");
+    // std::cout << "Please, enter ethrnet interface name: ";
+    // std::cin >> ifaceName;
+    // auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/eth-parse-var2.c", "iec61850_filter", ifaceName);
+    // if (sock >= 0)
+    // {
+    //    test2(sock);
+    // }
+
+    auto bpfObj = bpf->getBpfObject();
+    const auto reader = [bpfObj]([[maybe_unused]] void *cpu, [[maybe_unused]] void *data, [[maybe_unused]] int size) -> void {
+        auto packets = bpfObj->get_array_table<struct packet_buf>("xmits").get_table_offline();
+        std::uint64_t *packPtr = nullptr;
+        constexpr auto newSize = PACKET_BUF_SIZE / (sizeof(std::uint64_t) / sizeof(std::uint8_t));
+        for (auto &&packet : packets)
+        {
+            packPtr = reinterpret_cast<std::uint64_t *>(&packet.data[0]);
+            std::cout << "0x";
+            for (auto i = std::size_t(0); i < newSize; i++)
+            {
+                printf("%016lX", *(packPtr + i));
+            }
+            std::cout << '\n';
+        }
+    };
+
+    bpf->openPerfBuf("xmits", reader);
+
     return 0;
 }
