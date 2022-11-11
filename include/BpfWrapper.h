@@ -17,6 +17,8 @@ private:
     /// \brief Removing all substrings "what".
     std::size_t remove_all(std::string &inout, std::string_view what);
 
+    ebpf::StatusTuple socket_configure(int &socket, const char *ifaceName);
+
 public:
     /// \brief Default c-tor.
     explicit BpfWrapper();

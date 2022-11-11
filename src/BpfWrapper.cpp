@@ -1,6 +1,8 @@
 #include <BpfWrapper.h>
 #include <bpf/libbpf.h>
 #include <fstream>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 BpfWrapper::BpfWrapper() : bpfPtr(new ebpf::BPF)
 {
@@ -38,6 +40,28 @@ std::size_t BpfWrapper::remove_all(std::string &inout, const std::string_view wh
     return replace_all(inout, what, "");
 }
 
+ebpf::StatusTuple BpfWrapper::socket_configure(int &socket, const char *ifaceName)
+{
+    ifreq req;
+    memset(&req, 0, sizeof(req));
+    strncpy(req.ifr_name, ifaceName, IF_NAMESIZE);
+    if (ioctl(socket, SIOCGIFFLAGS, &req) >= 0)
+    {
+        req.ifr_flags |= IFF_PROMISC;
+        if (ioctl(socket, SIOCSIFFLAGS, &req) >= 0)
+        {
+            if (ioctl(socket, SIOCGIFINDEX, &req) >= 0)
+                return ebpf::StatusTuple::OK();
+            else
+                return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCGIFINDEX' I/O Control flag for socket");
+        }
+        else
+            return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCSIFFLAGS' I/O Control flag for socket");
+    }
+    else
+        return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCGIFFLAGS' I/O Control flag for socket");
+}
+
 ebpf::StatusTuple BpfWrapper::initByFile(const std::string_view &programPath, const std::string_view &deviceName)
 {
     auto bpfProgText = read_file(programPath);
@@ -60,11 +84,23 @@ ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &deviceName, con
     socket = bpf_open_raw_sock(deviceName.c_str());
     if (socket >= 0)
     {
-        auto result = bpf_attach_socket(socket, function);
-        if (result >= 0)
-            return ebpf::StatusTuple::OK();
+        auto configureStatus = socket_configure(socket, deviceName.c_str());
+        if (configureStatus.ok())
+        {
+            auto result = bpf_attach_socket(socket, function);
+            if (result >= 0)
+                return ebpf::StatusTuple::OK();
+            else
+            {
+                close(socket);
+                return ebpf::StatusTuple(-1, "bpf: Failed attaching function %i to socket", function);
+            }
+        }
         else
-            return ebpf::StatusTuple(-1, "bpf: Failed attaching function %i to socket", function);
+        {
+            close(socket);
+            return configureStatus;
+        }
     }
     else
         return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", deviceName.c_str());
