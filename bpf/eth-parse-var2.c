@@ -18,7 +18,7 @@ struct xmit_event {
 BPF_PERF_OUTPUT(xmits);
 
 #define PACKET_BUF_SIZE 2048
-#define PACKET_BUFS_PER_CPU 16
+#define PACKET_BUFS_PER_CPU 1
 
 struct packet_buf {
     u8 data[PACKET_BUF_SIZE];

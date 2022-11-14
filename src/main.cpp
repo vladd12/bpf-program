@@ -1,5 +1,7 @@
 #include <BpfWrapper.h>
 #include <cerrno>
+#include <vector>
+#include <thread>
 
 // Linux
 #include <linux/if_ether.h>
@@ -35,10 +37,12 @@ void printMacAddr(const std::uint8_t macAddr[])
     printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 }
 
-void printFrame(const std::uint32_t *frame, const std::size_t &size) {
-    std::cerr << "0x";
-    for (std::size_t i = 0, j = 0; j < size; i++, j = j + sizeof(std::uint32_t)) {
-        printf("%08X", frame[i]);
+void printFrame(const std::uint8_t *frame, const std::size_t &size)
+{
+    std::cerr << "Frame: 0x";
+    for (std::size_t i = 0; i < size; i++)
+    {
+        printf("%02X", frame[i]);
     }
     std::cerr << '\n';
 }
@@ -65,7 +69,8 @@ void test2(int &sock)
 }
 
 constexpr std::size_t TASK_COMM_LEN = 16;
-struct xmit_event {
+struct xmit_event
+{
     std::uint64_t ts;
     std::uint32_t pid;
     std::uint32_t tgid;
@@ -85,17 +90,37 @@ struct packet_buf
     std::uint8_t data[PACKET_BUF_SIZE];
 };
 
+static auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
+static auto bpfObj = bpf -> getBpfObject();
+
 int main()
 {
-    auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    auto bpfObj = bpf->getBpfObject();
-
     auto reader = [](void *cb_cookie, void *data, int size) -> void {
+        static auto packetArray = bpfObj->get_percpu_array_table<packet_buf>("packet_buf");
+        static std::vector<packet_buf> packets;
+        packets.reserve(std::thread::hardware_concurrency());
+
         std::cout << "Size: " << size << '\n';
         if (size > 0)
         {
-            auto frame = reinterpret_cast<xmit_event *>(data);
+            auto event = reinterpret_cast<xmit_event *>(data);
+            std::cerr << "Length: " << event->len << "\nData length: " << event->datalen
+                      << "\nPacket buffer pointer: " << event->packet_buf_ptr << std::endl;
 
+            packetArray.get_value(event->packet_buf_ptr, packets);
+            for (auto &&packet : packets)
+            {
+                auto buffer = &packet.data[0];
+                printFrame(buffer, event->len);
+                auto iter = buffer;
+                auto ethernetHeader = reinterpret_cast<ether_header *>(iter);
+                std::cout << "Dst MAC address: ";
+                printMacAddr(ethernetHeader->ether_dhost);
+                std::cout << "Src MAC address: ";
+                printMacAddr(ethernetHeader->ether_shost);
+                iter += sizeof(ether_header);
+            }
+            std::cout << '\n';
         }
     };
 
@@ -116,26 +141,24 @@ int main()
                 if (status.ok())
                 {
                     auto perf_buff = bpfObj->get_perf_buffer("xmits");
-                    if (perf_buff != nullptr) {
-                    while (true)
+
+                    if (perf_buff != nullptr)
                     {
-                        auto pollStat = perf_buff->poll(-1);
-                        if (pollStat < 0)
+                        while (true)
                         {
-                            std::cout << "Polling error, data no exist!\n\n";
-                        }
-                        else if (pollStat == 0)
-                        {
-                            std::cout << "Buffer is empty!\n\n";
-                        }
-                        else
-                        {
-                            ;
-                            ;
+                            auto pollStat = perf_buff->poll(-1);
+                            if (pollStat < 0)
+                            {
+                                std::cout << "Polling error, data no exist!\n\n";
+                            }
+                            else if (pollStat == 0)
+                            {
+                                std::cout << "Buffer is empty!\n\n";
+                            }
                         }
                     }
-                    }
-                    else status = ebpf::StatusTuple(-1, "Unable to getting perf buffer!");
+                    else
+                        status = ebpf::StatusTuple(-1, "Unable to getting perf buffer!");
                 }
             }
             else
