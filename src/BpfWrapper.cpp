@@ -73,15 +73,15 @@ ebpf::BPF *BpfWrapper::getBpfObject()
     return bpfPtr.get();
 }
 
-ebpf::StatusTuple BpfWrapper::openPerfBuf(const std::string_view bufName, std::function<void(void *, void *, int)> bufReader)
-{
-    return bpfPtr->open_perf_buffer(bufName.data(), bufReader.target<void(void *, void *, int)>());
-}
+// ebpf::StatusTuple BpfWrapper::openPerfBuf(const std::string_view bufName, std::function<void(void *, void *, int)> bufReader)
+//{
+//    return bpfPtr->open_perf_buffer(bufName.data(), bufReader.target<void(void *, void *, int)>());
+//}
 
-ebpf::StatusTuple BpfWrapper::closePerfBuf(const std::string_view bufName)
-{
-    return bpfPtr->close_perf_buffer(bufName.data());
-}
+// ebpf::StatusTuple BpfWrapper::closePerfBuf(const std::string_view bufName)
+//{
+//    return bpfPtr->close_perf_buffer(bufName.data());
+//}
 
 ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &deviceName, const int function, int &socket)
 {

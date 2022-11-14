@@ -35,6 +35,14 @@ void printMacAddr(const std::uint8_t macAddr[])
     printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 }
 
+void printFrame(const std::uint32_t *frame, const std::size_t &size) {
+    std::cerr << "0x";
+    for (std::size_t i = 0, j = 0; j < size; i++, j = j + sizeof(std::uint32_t)) {
+        printf("%08X", frame[i]);
+    }
+    std::cerr << '\n';
+}
+
 void test2(int &sock)
 {
     constexpr std::size_t bufSize = 2048;
@@ -56,6 +64,21 @@ void test2(int &sock)
     delete[] buffer;
 }
 
+constexpr std::size_t TASK_COMM_LEN = 16;
+struct xmit_event {
+    std::uint64_t ts;
+    std::uint32_t pid;
+    std::uint32_t tgid;
+    std::uint32_t len;
+    std::uint32_t datalen;
+    std::uint32_t packet_buf_ptr;
+    char comm[TASK_COMM_LEN];
+    std::uint64_t head;
+    std::uint64_t data;
+    std::uint64_t tail;
+    std::uint64_t end;
+};
+
 constexpr std::size_t PACKET_BUF_SIZE = 2048;
 struct packet_buf
 {
@@ -64,37 +87,62 @@ struct packet_buf
 
 int main()
 {
-    using namespace std;
     auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    bpf->initByFile("bpf/eth-parse-var2.c");
-
-    // auto ifaceName = std::string("");
-    // std::cout << "Please, enter ethrnet interface name: ";
-    // std::cin >> ifaceName;
-    // auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/eth-parse-var2.c", "iec61850_filter", ifaceName);
-    // if (sock >= 0)
-    // {
-    //    test2(sock);
-    // }
-
     auto bpfObj = bpf->getBpfObject();
-    const auto reader = [bpfObj]([[maybe_unused]] void *cpu, [[maybe_unused]] void *data, [[maybe_unused]] int size) -> void {
-        auto packets = bpfObj->get_array_table<struct packet_buf>("xmits").get_table_offline();
-        std::uint64_t *packPtr = nullptr;
-        constexpr auto newSize = PACKET_BUF_SIZE / (sizeof(std::uint64_t) / sizeof(std::uint8_t));
-        for (auto &&packet : packets)
+
+    auto reader = [](void *cb_cookie, void *data, int size) -> void {
+        std::cout << "Size: " << size << '\n';
+        if (size > 0)
         {
-            packPtr = reinterpret_cast<std::uint64_t *>(&packet.data[0]);
-            std::cout << "0x";
-            for (auto i = std::size_t(0); i < newSize; i++)
-            {
-                printf("%016lX", *(packPtr + i));
-            }
-            std::cout << '\n';
+            auto frame = reinterpret_cast<xmit_event *>(data);
+
         }
     };
 
-    bpf->openPerfBuf("xmits", reader);
+    auto status = bpf->initByFile("bpf/eth-parse-var2.c");
+    if (status.ok())
+    {
+        int prog_fd = 0;
+
+        status = bpfObj->load_func("kprobe____dev_queue_xmit", BPF_PROG_TYPE_KPROBE, prog_fd);
+        if (status.ok())
+        {
+            // bpfObj->attach_kprobe("__dev_queue_xmit", "kprobe____dev_queue_xmit");
+
+            auto ret = bpf_attach_kprobe(prog_fd, BPF_PROBE_ENTRY, "kprobe____dev_queue_xmit", "__dev_queue_xmit", 0, 0);
+            if (ret >= 0)
+            {
+                status = bpfObj->open_perf_buffer("xmits", reader);
+                if (status.ok())
+                {
+                    auto perf_buff = bpfObj->get_perf_buffer("xmits");
+                    if (perf_buff != nullptr) {
+                    while (true)
+                    {
+                        auto pollStat = perf_buff->poll(-1);
+                        if (pollStat < 0)
+                        {
+                            std::cout << "Polling error, data no exist!\n\n";
+                        }
+                        else if (pollStat == 0)
+                        {
+                            std::cout << "Buffer is empty!\n\n";
+                        }
+                        else
+                        {
+                            ;
+                            ;
+                        }
+                    }
+                    }
+                    else status = ebpf::StatusTuple(-1, "Unable to getting perf buffer!");
+                }
+            }
+            else
+                status = ebpf::StatusTuple(-1, "Unable to attach kprobe!");
+        }
+    }
+    printStatusMsg(status);
 
     return 0;
 }
