@@ -17,18 +17,19 @@ private:
     /// \brief Removing all substrings "what".
     std::size_t remove_all(std::string &inout, std::string_view what);
 
-    ebpf::StatusTuple socket_configure(int &socket, const char *ifaceName);
+    /// \brief Getting a raw socket and binding it to interface, specified by ifaceName.
+    int get_raw_socket(const std::string &ifaceName);
 
 public:
     /// \brief Default c-tor.
     explicit BpfWrapper();
 
-    /// \brief Initializations eBPF program from file specified by filepath.
+    /// \brief Initializations eBPF program from file specified by programPath.
     ebpf::StatusTuple initByFile(const std::string_view &programPath, const std::string_view &deviceName);
 
     /// \brief Returns eBPF object stored in ebpf::BPF smart pointer.
     ebpf::BPF *getBpfObject();
 
-    /// \brief Attaching raw socket for listening ethernbet device, specified by device name.
-    ebpf::StatusTuple attachRawSocket(const std::string &deviceName, const int function, int &socket);
+    /// \brief Attaching raw socket for listening ethernet interface, specified by ifaceName.
+    ebpf::StatusTuple attachRawSocket(const std::string &ifaceName, const int function, int &socket);
 };

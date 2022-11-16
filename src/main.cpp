@@ -1,12 +1,7 @@
 #include <BpfWrapper.h>
-#include <cerrno>
 
 // Linux
-#include <linux/if_ether.h>
-#include <linux/if_packet.h>
 #include <net/ethernet.h>
-#include <net/if.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
 
 int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPath, //
@@ -28,20 +23,6 @@ int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string_view programPa
     }
     printStatusMsg(executeStatus);
     return -1;
-}
-
-void test(int &sock)
-{
-    // Вывод данных о сокете
-    auto fd = sock;
-    auto optval = int(0);
-    auto optlen = socklen_t(sizeof(optval));
-    auto family = getsockopt(fd, SOL_SOCKET, SO_DOMAIN, &optval, &optlen);
-    std::cout << family << ' ' << optval << ' ' << AF_PACKET << '\n';
-    auto type = getsockopt(fd, SOL_SOCKET, SO_TYPE, &optval, &optlen);
-    std::cout << type << ' ' << optval << ' ' << SOCK_RAW << '\n';
-    auto proto = getsockopt(fd, SOL_SOCKET, SO_PROTOCOL, &optval, &optlen);
-    std::cout << proto << ' ' << optval << ' ' << htons(ETH_P_ALL) << "\n\n";
 }
 
 void printMacAddr(const std::uint8_t macAddr[])

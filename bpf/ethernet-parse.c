@@ -19,10 +19,10 @@ int iec61850_filter(struct __sk_buff *skb) {
     u64 receiverMac = RECEIVER_MAC;
 
     struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
-    u64 destinationMac = ethernet->dst;
+    u64 sourceMac = ethernet->src;
 
-    // filter frames with destination MAC address
-    if (receiverMac != destinationMac) {
+    // filter frames that socket send
+    if (receiverMac == sourceMac) {
         goto DROP;
     }
 

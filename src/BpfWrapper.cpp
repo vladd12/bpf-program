@@ -1,8 +1,12 @@
 #include <BpfWrapper.h>
 #include <bpf/libbpf.h>
+#include <cstdio>
 #include <fstream>
+#include <linux/if_ether.h>
 #include <net/if.h>
+#include <netinet/in.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 BpfWrapper::BpfWrapper() : bpfPtr(new ebpf::BPF)
 {
@@ -40,26 +44,53 @@ std::size_t BpfWrapper::remove_all(std::string &inout, const std::string_view wh
     return replace_all(inout, what, "");
 }
 
-ebpf::StatusTuple BpfWrapper::socket_configure(int &socket, const char *ifaceName)
+int BpfWrapper::get_raw_socket(const std::string &ifaceName)
 {
-    ifreq req;
-    memset(&req, 0, sizeof(req));
-    strncpy(req.ifr_name, ifaceName, IF_NAMESIZE);
-    if (ioctl(socket, SIOCGIFFLAGS, &req) >= 0)
+    constexpr int error = -1;
+    int status = error;
+    int sock_fd = socket(PF_PACKET, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, htons(ETH_P_ALL));
+    if (sock_fd < 0)
     {
-        req.ifr_flags |= IFF_PROMISC;
-        if (ioctl(socket, SIOCSIFFLAGS, &req) >= 0)
-        {
-            if (ioctl(socket, SIOCGIFINDEX, &req) >= 0)
-                return ebpf::StatusTuple::OK();
-            else
-                return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCGIFINDEX' I/O Control flag for socket");
-        }
-        else
-            return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCSIFFLAGS' I/O Control flag for socket");
+        fprintf(stderr, "Can't create raw socket!\n");
+        return error;
     }
-    else
-        return ebpf::StatusTuple(-1, "bpf: Failed setting 'SIOCGIFFLAGS' I/O Control flag for socket");
+
+    // Not bind socket to interface with empty name.
+    if (!ifaceName.empty())
+    {
+        // Binding socket to an interface.
+        status = setsockopt(sock_fd, SOL_SOCKET, SO_BINDTODEVICE, ifaceName.c_str(), ifaceName.length() + 1);
+        if (status < 0)
+        {
+            fprintf(stderr, "Can't bind a socket to specified interface!\n");
+            close(sock_fd);
+            return error;
+        }
+    }
+
+    /* Set the network card in promiscuos mode.
+     * An ioctl() request has encoded in it whether the argument is an in parameter or out parameter.
+     * SIOCGIFFLAGS	0x8913 - get flags;
+     * SIOCSIFFLAGS	0x8914 - set flags.
+     */
+    struct ifreq ethreq;
+    strncpy(ethreq.ifr_name, ifaceName.c_str(), IF_NAMESIZE);
+    status = ioctl(sock_fd, SIOCGIFFLAGS, &ethreq);
+    if (status == error)
+    {
+        fprintf(stderr, "Can't get socket flags with ioctl!\n");
+        close(sock_fd);
+        return error;
+    }
+    ethreq.ifr_flags |= IFF_PROMISC;
+    status = ioctl(sock_fd, SIOCSIFFLAGS, &ethreq);
+    if (status == error)
+    {
+        fprintf(stderr, "Can't set socket flags with ioctl!\n");
+        close(sock_fd);
+        return error;
+    }
+    return sock_fd;
 }
 
 ebpf::StatusTuple BpfWrapper::initByFile(const std::string_view &programPath, const std::string_view &deviceName)
@@ -79,29 +110,20 @@ ebpf::BPF *BpfWrapper::getBpfObject()
     return bpfPtr.get();
 }
 
-ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &deviceName, const int function, int &socket)
+ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
 {
-    socket = bpf_open_raw_sock(deviceName.c_str());
+    socket = get_raw_socket(ifaceName);
     if (socket >= 0)
     {
-        auto configureStatus = socket_configure(socket, deviceName.c_str());
-        if (configureStatus.ok())
-        {
-            auto result = bpf_attach_socket(socket, function);
-            if (result >= 0)
-                return ebpf::StatusTuple::OK();
-            else
-            {
-                close(socket);
-                return ebpf::StatusTuple(-1, "bpf: Failed attaching function %i to socket", function);
-            }
-        }
+        auto result = bpf_attach_socket(socket, function);
+        if (result >= 0)
+            return ebpf::StatusTuple::OK();
         else
         {
             close(socket);
-            return configureStatus;
+            return ebpf::StatusTuple(-1, "bpf: Failed attaching function %i to socket", function);
         }
     }
     else
-        return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", deviceName.c_str());
+        return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", ifaceName.c_str());
 }
