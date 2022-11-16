@@ -1,7 +1,7 @@
 #include <BpfWrapper.h>
 #include <cerrno>
-#include <vector>
 #include <thread>
+#include <vector>
 
 // Linux
 #include <linux/if_ether.h>
@@ -98,7 +98,6 @@ int main()
     auto reader = [](void *cb_cookie, void *data, int size) -> void {
         static auto packetArray = bpfObj->get_percpu_array_table<packet_buf>("packet_buf");
         static std::vector<packet_buf> packets;
-        packets.reserve(std::thread::hardware_concurrency());
 
         std::cout << "Size: " << size << '\n';
         if (size > 0)
@@ -111,14 +110,16 @@ int main()
             for (auto &&packet : packets)
             {
                 auto buffer = &packet.data[0];
-                printFrame(buffer, event->len);
                 auto iter = buffer;
                 auto ethernetHeader = reinterpret_cast<ether_header *>(iter);
-                std::cout << "Dst MAC address: ";
-                printMacAddr(ethernetHeader->ether_dhost);
-                std::cout << "Src MAC address: ";
-                printMacAddr(ethernetHeader->ether_shost);
-                iter += sizeof(ether_header);
+                if (ethernetHeader->ether_type != 0x0000) {
+                    printFrame(buffer, event->len);
+                    std::cout << "Dst MAC address: ";
+                    printMacAddr(ethernetHeader->ether_dhost);
+                    std::cout << "Src MAC address: ";
+                    printMacAddr(ethernetHeader->ether_shost);
+                    iter += sizeof(ether_header);
+                }
             }
             std::cout << '\n';
         }
@@ -132,8 +133,6 @@ int main()
         status = bpfObj->load_func("kprobe____dev_queue_xmit", BPF_PROG_TYPE_KPROBE, prog_fd);
         if (status.ok())
         {
-            // bpfObj->attach_kprobe("__dev_queue_xmit", "kprobe____dev_queue_xmit");
-
             auto ret = bpf_attach_kprobe(prog_fd, BPF_PROBE_ENTRY, "kprobe____dev_queue_xmit", "__dev_queue_xmit", 0, 0);
             if (ret >= 0)
             {
@@ -141,20 +140,15 @@ int main()
                 if (status.ok())
                 {
                     auto perf_buff = bpfObj->get_perf_buffer("xmits");
-
                     if (perf_buff != nullptr)
                     {
                         while (true)
                         {
                             auto pollStat = perf_buff->poll(-1);
                             if (pollStat < 0)
-                            {
                                 std::cout << "Polling error, data no exist!\n\n";
-                            }
                             else if (pollStat == 0)
-                            {
                                 std::cout << "Buffer is empty!\n\n";
-                            }
                         }
                     }
                     else
