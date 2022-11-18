@@ -6,6 +6,20 @@
 #define SV_PRIORITY 0b100   // SV protocol user priority
 #define SV_ETHERTYPE 0x88BA // SV message identifier
 
+static inline bool SV_CMP(char const *str, unsigned long length) {
+    // NOTE: value SV_ID declared by user programm
+    char cmp_str[] = "%SV_ID";
+    if (sizeof(cmp_str) != length)
+        return false;
+    
+    for (unsigned long i = 0; i < length; ++i) {
+        if (cmp_str[i] != str[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /* eBPF program.
    Filter IEC 61850-9-2 SV frames, having payload not empty if the program
    is loaded as PROG_TYPE_SOCKET_FILTER and attached to a socket.
@@ -14,31 +28,31 @@
 */
 int iec61850_filter(struct __sk_buff *skb) {
     u8 *cursor = 0;
-    // current ethernet device MAC address
-    // NOTE: value RECEIVER_MAC declared by user programm
-    u64 receiverMac = RECEIVER_MAC;
 
+    // Source MAC address from capturing ethernet frame
     struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
     u64 sourceMac = ethernet->src;
 
-    // filter frames that socket send
-    if (receiverMac == sourceMac) {
+    // Filter frames with protocol type
+    if (ethernet->type != IEC_PROTO && ethernet->type != SV_ETHERTYPE) {
         goto DROP;
     }
 
-    // filter frames with protocol type
-    if (ethernet->type != IEC_PROTO) {
+    // Current ethernet device MAC address
+    // NOTE: value IFACE_MAC declared by user programm
+    u64 ifaceMac = %IFACE_MAC;
+
+    // Filter frames that socket send
+    if (ifaceMac == sourceMac) {
         goto DROP;
     }
-
-    // filter frames with SV user priority
-    struct dot1q_t *iec = cursor_advance(cursor, sizeof(*iec));
-    if (iec->pri != SV_PRIORITY) {
-        goto DROP;
-    }
-
-    // filter frames with SV message identifier
-    if (iec->type != SV_ETHERTYPE) {
+    
+    // Sender ethernet device MAC address
+    // NOTE: value SRC_MAC declared by user programm
+    u64 specMac = %SRC_MAC;
+    
+    // Filter frames with specified source MAC address
+    if (specMac != sourceMac) {
         goto DROP;
     }
 
@@ -52,3 +66,4 @@ int iec61850_filter(struct __sk_buff *skb) {
     DROP:
         return 0;
 }
+

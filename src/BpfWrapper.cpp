@@ -8,7 +8,13 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-BpfWrapper::BpfWrapper() : bpfPtr(new ebpf::BPF)
+const static auto svReplacement1 = R"(char cmp_str[] = "%SV_ID";)";
+const static auto svReplacement2 = R"(
+    if (sizeof(cmp_str) != length)
+        return false;
+)";
+
+BpfWrapper::BpfWrapper() : bpfPtr(new ebpf::BPF), bpfProg()
 {
 }
 
@@ -42,6 +48,45 @@ std::size_t BpfWrapper::replace_all(std::string &inout, const std::string_view w
 std::size_t BpfWrapper::remove_all(std::string &inout, const std::string_view what)
 {
     return replace_all(inout, what, "");
+}
+
+void BpfWrapper::filter_iface_mac(const std::string &ifaceName)
+{
+    // Replacing ethernet interface MAC address
+    constexpr auto ifacePlaceholder = "%IFACE_MAC";
+    if (!ifaceName.empty())
+    {
+        auto deviceAddressFilepath = "/sys/class/net/" + ifaceName + "/address";
+        auto addressText = read_file(deviceAddressFilepath);
+        remove_all(addressText, ":");
+        remove_all(addressText, "\n");
+        replace_all(bpfProg, ifacePlaceholder, "0x" + addressText);
+    }
+    else
+        replace_all(bpfProg, ifacePlaceholder, "0xFFFFFFFFFFFF");
+}
+
+void BpfWrapper::filter_src_mac(const std::string &srcMac)
+{
+    // Replacing remote device MAC address
+    constexpr auto srcMacPlaceholder = "%SRC_MAC";
+    if (!srcMac.empty())
+        replace_all(bpfProg, srcMacPlaceholder, srcMac);
+    else
+        replace_all(bpfProg, srcMacPlaceholder, "sourceMac");
+}
+
+void BpfWrapper::filter_sv_id(const std::string &svID)
+{
+    // Replacing sample values ID with specified
+    constexpr auto svIdPlaceholder = "%SV_ID";
+    if (!svID.empty())
+        replace_all(bpfProg, svIdPlaceholder, svID);
+    else
+    {
+        replace_all(bpfProg, svReplacement1, "char const *cmp_str = str;");
+        remove_all(bpfProg, svReplacement2);
+    }
 }
 
 int BpfWrapper::get_raw_socket(const std::string &ifaceName)
@@ -93,16 +138,18 @@ int BpfWrapper::get_raw_socket(const std::string &ifaceName)
     return sock_fd;
 }
 
-ebpf::StatusTuple BpfWrapper::initByFile(const std::string_view &programPath, const std::string_view &deviceName)
+void BpfWrapper::initByFile(const std::string &programPath)
 {
-    auto bpfProgText = read_file(programPath);
-    auto deviceAddressFilepath = "/sys/class/net/" + std::string(deviceName.data()) + "/address";
-    auto addressText = read_file(deviceAddressFilepath);
-    remove_all(addressText, ":");
-    remove_all(addressText, "\n");
-    // Replacing text
-    replace_all(bpfProgText, "RECEIVER_MAC", "0x" + addressText);
-    return bpfPtr->init(bpfProgText);
+    bpfProg = read_file(programPath);
+}
+
+ebpf::StatusTuple BpfWrapper::filterProgText(const std::string &iface, const std::string &srcMac, const std::string &svID)
+{
+    filter_iface_mac(iface);
+    filter_src_mac(srcMac);
+    filter_sv_id(svID);
+    std::cout << "code:\n\n" << bpfProg << "\n\n";
+    return bpfPtr->init(bpfProg);
 }
 
 ebpf::BPF *BpfWrapper::getBpfObject()
