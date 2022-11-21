@@ -68,9 +68,9 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 int main()
 {
     auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
-    auto ifaceName = std::string("enp0s8");
-    auto srcMacAddr = std::string("0x0cefaf3042cc");
-    auto svID = std::string("aboba");
+    auto ifaceName = std::string("enp0s8");          //
+    auto srcMacAddr = std::string("0x0cefaf3042cc"); //
+    auto svID = std::string("ENS80pointMU01");
     // inputData(ifaceName, srcMacAddr, svID);
 
     auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", ifaceName, srcMacAddr, svID);

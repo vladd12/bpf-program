@@ -1,19 +1,62 @@
 #include <uapi/linux/ptrace.h>
 #include <net/sock.h>
 #include <bcc/proto.h>
+#include <bcc/helpers.h>
 
 #define IEC_PROTO 0x8100    // 0x8100 - IEC 61850 protocol
 #define SV_PRIORITY 0b100   // SV protocol user priority
 #define SV_ETHERTYPE 0x88BA // SV message identifier
 
+struct sv_start_t {
+    u16 appid;
+    u16 length;
+    u16 reserved1;
+    u16 reserved2;
+} BPF_PACKET_HEADER;
+
+struct sv_seqASDU_80p {
+    u8 seqAsduId;
+    u8 length;
+} BPF_PACKET_HEADER;
+
+struct sv_noASDU_80p {
+    u8 noSduId;
+    u8 length;
+    u8 blockNum;
+    struct sv_seqASDU_80p seqASDU;
+} BPF_PACKET_HEADER;
+
+struct sv_savPDU_80p {
+    u8 savPduId;
+    u8 length;
+    struct sv_noASDU_80p noASDU;
+} BPF_PACKET_HEADER;
+
+struct ASDU_start_t {
+    u8 asduId;
+    u8 length;
+    u8 svId;
+    u8 svIdLength;
+} BPF_PACKET_HEADER;
+
 static inline bool SV_CMP(char const *str, unsigned long length) {
     // NOTE: value SV_ID declared by user programm
     char cmp_str[] = "%SV_ID";
-    if (sizeof(cmp_str) != length)
+
+    if ((sizeof(cmp_str) - 1) != length)
         return false;
+
+    bpf_trace_printk("%u %u", sizeof(cmp_str) - 1, length);
+
+    char comparand[sizeof(cmp_str) - 1];
+    long err = bpf_probe_read_kernel(&comparand, sizeof(comparand), str);
+    if (err) {
+        bpf_trace_printk("Error: %ld", err);
+    }
     
     for (unsigned long i = 0; i < length; ++i) {
-        if (cmp_str[i] != str[i]) {
+        bpf_trace_printk("%u %u", cmp_str[i], comparand[i]);
+        if (cmp_str[i] != comparand[i]) {
             return false;
         }
     }
@@ -55,6 +98,29 @@ int iec61850_filter(struct __sk_buff *skb) {
     if (specMac != sourceMac) {
         goto DROP;
     }
+
+    struct sv_start_t *sv_start = cursor_advance(cursor, sizeof(*sv_start));
+    struct sv_savPDU_80p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
+    struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
+    const u8 len = asduHead->svIdLength;
+    char *svID = cursor_advance(cursor, len);
+    if (svID == NULL) {
+        goto DROP;
+    }
+
+    //unsigned char svIdName[255];
+    //bpf_probe_read_kernel(&svIdName[0], len, cursor);
+
+    bool cmp = SV_CMP(svID, len);
+    if (cmp == true) {
+        bpf_trace_printk("It's Ok");
+    }
+    else {
+        bpf_trace_printk("It's not Ok :(");
+    }
+
+
+    // bpf_trace_printk("0x%x", asduHead->svIdLength);
 
     goto KEEP;
 
