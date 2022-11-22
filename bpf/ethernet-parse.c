@@ -39,24 +39,15 @@ struct ASDU_start_t {
     u8 svIdLength;
 } BPF_PACKET_HEADER;
 
-static inline bool SV_CMP(char const *str, unsigned long length) {
+static inline bool SV_CMP(struct __sk_buff *skb, unsigned long offset, unsigned long length) {
     // NOTE: value SV_ID declared by user programm
     char cmp_str[] = "%SV_ID";
 
     if ((sizeof(cmp_str) - 1) != length)
         return false;
-
-    bpf_trace_printk("%u %u", sizeof(cmp_str) - 1, length);
-
-    char comparand[sizeof(cmp_str) - 1];
-    long err = bpf_probe_read_kernel(&comparand, sizeof(comparand), str);
-    if (err) {
-        bpf_trace_printk("Error: %ld", err);
-    }
     
-    for (unsigned long i = 0; i < length; ++i) {
-        bpf_trace_printk("%u %u", cmp_str[i], comparand[i]);
-        if (cmp_str[i] != comparand[i]) {
+    for (unsigned long i = 0; i < sizeof(cmp_str) - 1; ++i) {
+        if (load_byte(skb, offset + i) != cmp_str[i]) {
             return false;
         }
     }
@@ -102,25 +93,31 @@ int iec61850_filter(struct __sk_buff *skb) {
     struct sv_start_t *sv_start = cursor_advance(cursor, sizeof(*sv_start));
     struct sv_savPDU_80p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
     struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
+    unsigned long payloadOfsset = sizeof(*ethernet) + sizeof(*sv_start) + sizeof(*savPDU) + sizeof(*asduHead);
     const u8 len = asduHead->svIdLength;
-    char *svID = cursor_advance(cursor, len);
-    if (svID == NULL) {
-        goto DROP;
-    }
 
-    //unsigned char svIdName[255];
-    //bpf_probe_read_kernel(&svIdName[0], len, cursor);
+//    char *svID = cursor_advance(cursor, len);
+//    if (svID == NULL) {
+//        goto DROP;
+//    }
 
-    bool cmp = SV_CMP(svID, len);
+//    char sv_str[] = "%SV_ID";
+//    if ((sizeof(sv_str) - 1) != len) {
+//        goto DROP;
+//    }
+//    char buffer[sizeof(sv_str) - 1];
+//    for (int i = 0; i < sizeof(sv_str) - 1; i++) {
+//        buffer[i] = load_byte(skb, ofsset + i);
+//        bpf_trace_printk("%x %x", sv_str[i], buffer[i]);
+//    }
+
+    bool cmp = SV_CMP(skb, payloadOfsset, len);
     if (cmp == true) {
         bpf_trace_printk("It's Ok");
     }
     else {
         bpf_trace_printk("It's not Ok :(");
     }
-
-
-    // bpf_trace_printk("0x%x", asduHead->svIdLength);
 
     goto KEEP;
 
