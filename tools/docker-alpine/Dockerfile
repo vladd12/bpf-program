@@ -1,0 +1,15 @@
+# Pull official alpine based image
+FROM amd64/alpine:3.17
+
+# Install instruments
+RUN apk update && apk upgrade && \
+    apk add git && \
+    apk add cmake && \
+    apk add clang
+
+WORKDIR /home/alpine
+
+CMD ["/bin/sh"]
+
+
+

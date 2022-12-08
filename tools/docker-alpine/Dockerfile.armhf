@@ -1,0 +1,31 @@
+# Pull official alpine based image
+FROM arm32v6/alpine:3.17
+
+# Install packages for development
+RUN apk update && apk upgrade && \
+    apk add git make cmake build-base linux-headers \
+    iperf llvm15-dev llvm15-static \
+    clang-dev clang-static elfutils-dev
+
+# Setting C compiler
+ENV CC=/usr/bin/clang
+
+# Setting C++ compiler
+ENV CXX=/usr/bin/clang++
+
+# Setting initial working directory
+WORKDIR /home/payload
+
+# Cloning libbcc from GitHub
+RUN git clone https://github.com/iovisor/bcc.git && mkdir bcc/build
+
+# Setting new working directory
+WORKDIR /home/payload/bcc/build
+
+# Build this library from source
+RUN cmake -DENABLE_EXAMPLES:BOOL=OFF -DENABLE_MAN:BOOL=OFF \
+    -DENABLE_TESTS:BOOL=OFF .. && cmake --build . --config Release
+
+VOLUME /home/payload/bcc/build
+
+CMD ["/bin/sh"]
