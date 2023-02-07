@@ -34,3 +34,7 @@ unix*
 *.autosave
 *.user
 
+# CMake
+CMakeLists.txt.user
+CMakeLists.txt.user*
+*.kate-swp
