@@ -32,17 +32,17 @@ else()
 endif()
 
 # Finding kernel headers
-find_package(kernel-headers REQUIRED)
-if (NOT KERNELHEADERS_FOUND)
-    message(FATAL "Not found kernel headers, please install it")
-else()
-    message(STATUS "
-    Kernel headers were found:
-    Kernel release: ${KERNEL_RELEASE}
-    Kernel headers path: ${KERNELHEADERS_DIR}
-    Kernel include path: ${KERNELHEADERS_INCLUDE_DIRS}
-    ")
-endif()
+#find_package(kernel-headers REQUIRED)
+#if (NOT KERNELHEADERS_FOUND)
+#    message(FATAL "Not found kernel headers, please install it")
+#else()
+#    message(STATUS "
+#    Kernel headers were found:
+#    Kernel release: ${KERNEL_RELEASE}
+#    Kernel headers path: ${KERNELHEADERS_DIR}
+#    Kernel include path: ${KERNELHEADERS_INCLUDE_DIRS}
+#    ")
+#endif()
 
 # Collecting sources of project
 file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h)
@@ -51,7 +51,7 @@ file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp)
 # Adding paths of headers to include
 include_directories(${LIBBPF_INCLUDE_DIR})
 include_directories(${LIBCC_INCLUDE_DIR})
-include_directories(${KERNELHEADERS_INCLUDE_DIRS})
+#include_directories(${KERNELHEADERS_INCLUDE_DIRS})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Compilation project
