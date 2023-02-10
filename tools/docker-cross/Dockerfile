@@ -15,10 +15,6 @@ RUN apt update && apt full-upgrade -y && apt install -y --no-install-recommends 
     apt-get -qq clean && \
     rm -rf /var/lib/apt/lists/* 
 
-# Set compiler in environment
-ENV CC=/usr/bin/gcc
-ENV CXX=/usr/bin/g++
-
 # Reconfigure locale
 RUN locale-gen en_US.UTF-8 && dpkg-reconfigure locales
 
@@ -38,10 +34,8 @@ RUN dpkg --add-architecture armhf && apt update && \
 RUN echo "deb [arch=armhf,amd64] http://ftp.ru.debian.org/debian bullseye main" >> /etc/apt/sources.list && \
     apt update && apt install -y --no-install-recommends linux-headers-5.10.0-18-common-rt \
     libbpf-dev:armhf libclang-dev:armhf libclang-cpp-dev:armhf \
-#    libedit-dev:armhf \
     libelf-dev:armhf \
     libfl-dev:armhf \
-#    libzip-dev:armhf \
     linux-libc-dev:armhf llvm-dev:armhf && \
     mkdir /tmp/work
 
@@ -51,32 +45,35 @@ USER user
 WORKDIR /home/user
 ENV HOME /home/user
 
-# Set compiler in environment
-ENV CC=/usr/bin/gcc
-ENV CXX=/usr/bin/g++
+# Set C/C++ compilers in environment
+ENV CC=/usr/bin/arm-linux-gnueabihf-gcc
+ENV CXX=/usr/bin/arm-linux-gnueabihf-g++
 
 # Cloning bcc repo from GitHub
 RUN git clone https://github.com/iovisor/bcc.git && \
     cd bcc && mkdir build && cd ..
 
-# Setting new working directory
+# Cloning working repository from GitHub
+RUN git clone https://github.com/vladd12/bpf-program.git && \
+    cd bpf-program && git switch docker-armhf && mkdir build && cd ..
+    #git checkout -B "docker-armhf" "origin/docker-armhf"
+
+# Setting working directory for bcc build
 WORKDIR /home/user/bcc/build
 
-# Building bcc
+# Building and installing bcc from sources for armhf
 RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=/home/user/bpf-program/cmake/armhf-gcc-toolchain.cmake \
     -DENABLE_EXAMPLES:BOOL=OFF -DENABLE_MAN:BOOL=OFF -DENABLE_TESTS:BOOL=OFF .. && \
     cmake --build . --config Release && \
-    cmake --install . --config Release
+    sudo cmake --install . --config Release
 
-# Cloning working repository from GitHub
-RUN git clone https://github.com/vladd12/bpf-program.git && \
-    cd bpf-program && mkdir build && cd ..
-
-# Setting new working directory
+# Setting working directory for application build
 WORKDIR /home/user/bpf-program/build
 
-# Build application from sources
-#RUN cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=../cmake/armhf-gcc-toolchain.cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --config Release
+# Build main application from sources
+RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/armhf-gcc-toolchain.cmake  .. && \
+    cmake --build . --config Release
 
 CMD ["/bin/sh"]
