@@ -1,23 +1,7 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR ARM)
 
-if (MINGW OR CYGWIN OR WIN32)
-    set(UTIL_SEARCH_CMD where)
-elseif (UNIX OR APPLE)
-    set(UTIL_SEARCH_CMD which)
-endif ()
-
 set(TOOLCHAIN_PREFIX arm-linux-gnueabihf-)
-
-execute_process(
-    COMMAND ${UTIL_SEARCH_CMD} ${TOOLCHAIN_PREFIX}gcc
-    OUTPUT_VARIABLE BINUTILS_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-if (NOT BINUTILS_PATH)
-    message(FATAL_ERROR "ARM GCC toolchain not found")
-endif ()
 
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})

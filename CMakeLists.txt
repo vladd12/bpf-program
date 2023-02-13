@@ -10,7 +10,7 @@ set(ENABLE_CPP_API ON)
 # Finding libbpf
 find_package(bpf REQUIRED)
 if (NOT LIBBPF_FOUND)
-    message(FATAL "Not found libbpf, please install it")
+    message(FATAL_ERROR "Not found libbpf, please install it")
 else()
     message(STATUS "
     libbpf was found:
@@ -22,7 +22,7 @@ endif()
 # Finding libbcc
 find_package(bcc REQUIRED)
 if (NOT LIBBCC_FOUND)
-    message(FATAL "Not found libbcc, please install it")
+    message(FATAL_ERROR "Not found libbcc, please install it")
 else() 
     message(STATUS "
     libbcc was found:
@@ -31,34 +31,27 @@ else()
     Static lib path: ${LIBBCC_STATIC_LIBRARIES}")
 endif()
 
-# Finding kernel headers
-#find_package(kernel-headers REQUIRED)
-#if (NOT KERNELHEADERS_FOUND)
-#    message(FATAL "Not found kernel headers, please install it")
-#else()
-#    message(STATUS "
-#    Kernel headers were found:
-#    Kernel release: ${KERNEL_RELEASE}
-#    Kernel headers path: ${KERNELHEADERS_DIR}
-#    Kernel include path: ${KERNELHEADERS_INCLUDE_DIRS}
-#    ")
-#endif()
-
 # Collecting sources of project
-file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h)
-file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE files_h include/*.h)
+set(files_cpp
+    src/BpfWrapper.cpp
+    src/main.cpp
+)
 
 # Adding paths of headers to include
 include_directories(${LIBBPF_INCLUDE_DIR})
 include_directories(${LIBCC_INCLUDE_DIR})
-#include_directories(${KERNELHEADERS_INCLUDE_DIRS})
 include_directories("${PROJECT_SOURCE_DIR}/include")
+
+if(COMPAT_DIR)
+    include_directories(${COMPAT_DIR})
+endif()
 
 # Compilation project
 add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})
 
 # Linking libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBPF_LIBRARIES} ${LIBBCC_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBCC_LIBRARIES})
 
 # Some compilation flags
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
