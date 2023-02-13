@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(ENABLE_CPP_API ON)
 
-# Getting libbcc
-include(get_bcc)
-
 # Finding libbpf
 find_package(bpf REQUIRED)
 if (NOT LIBBPF_FOUND)
