@@ -70,7 +70,7 @@ RUN git clone https://github.com/iovisor/bcc.git && cd bcc && \
 
 # Cloning working repository from GitHub
 RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
-    git switch docker-armhf && \
+    git switch main && \
     mkdir build && cd ..
 
 # Setting working directory for bcc build
