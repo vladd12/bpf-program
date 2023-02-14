@@ -89,6 +89,7 @@ WORKDIR /home/user/bpf-program/build
 # Build main application from sources for armhf arch
 RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOMPAT_DIR=/usr/include/uapi \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/armhf-gcc-toolchain.cmake .. && \
-    cmake --build . --config Release
+    cmake --build . --config Release && \
+    cmake --install .
 
 CMD ["/bin/sh"]
