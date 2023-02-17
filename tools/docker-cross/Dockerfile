@@ -9,7 +9,6 @@ RUN apt update && apt full-upgrade -y && apt install -y --no-install-recommends 
     gcc cmake ninja-build build-essential python3-distutils \
     locales sudo ca-certificates file \
     git curl nano tar pkg-config \
-    python bison flex && \
     apt-get -qq clean && \
     rm -rf /var/lib/apt/lists/* 
 
@@ -45,53 +44,26 @@ WORKDIR /home/user
 # Set C/C++ compilers in environment
 ENV CC=/usr/bin/arm-linux-gnueabihf-gcc
 ENV CXX=/usr/bin/arm-linux-gnueabihf-g++
-ENV LIBRARY_PATH=/usr/lib/arm-linux-gnueabihf
 
 # Copying toolchain file in the image
 COPY ./armhf-gcc-toolchain.cmake /home/user/armhf-gcc-toolchain.cmake
 ENV TOOLCHAIN_PATH=/home/user/armhf-gcc-toolchain.cmake
 
-# Copying kernel headers in the image
-COPY ./kheaders.tar.xz /home/user/kheaders.tar.xz
-RUN sudo mkdir /usr/src/linux-headers && cd /usr/src/linux-headers && \
-    sudo tar -xvf /home/user/kheaders.tar.xz
-ENV KERNEL_HEADERS_ROOT=/usr/src/linux-headers
-ENV KERNEL_HEADERS_ARCH=$KERNEL_HEADERS_ROOT/arch/arm/include
-ENV KERNEL_HEADERS_MAIN=$KERNEL_HEADERS_ROOT/include
-
-# Cloning libbpf repo from GitHub, building version 0.3
-RUN git clone https://github.com/libbpf/libbpf.git && cd libbpf && \
-    git checkout -b stable 051a400 && cd src && mkdir build root
-
-# Setting working directory for libbpf build
-WORKDIR /home/user/libbpf/src
-
-# Building and installing libbpf from sources for armhf arch
-RUN PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig \
-    OBJDIR=build DESTDIR=root make install && \
-    sudo cp -R root/usr/include/bpf /usr/include && \
-    sudo cp -a root/usr/lib64/libbpf.* /usr/lib/arm-linux-gnueabihf/ && \
-    sudo cp root/usr/lib64/pkgconfig/libbpf.pc /usr/lib/arm-linux-gnueabihf/pkgconfig
-WORKDIR /home/user
-
-COPY ./fix.patch /home/user/fix.patch
-
-# Cloning bcc repo from GitHub, building version 0.17.0 (support kernel version 5.9)
+# Cloning bcc repo from GitHub, building version 0.25.0 (support kernel version 5.19)
 RUN git clone https://github.com/iovisor/bcc.git && cd bcc && \
-    git checkout -b stable ad5b82a && \
-    mkdir build && git apply ../fix.patch && cd ..
+    git checkout -b stable 711f030 && \
+    mkdir build && cd ..
 
 # Setting working directory for bcc build
 WORKDIR /home/user/bcc/build
 
 # Building and installing bcc from sources for armhf arch
 RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH \
-    -DKERNEL_INCLUDE_DIRS="$KERNEL_HEADERS_ARCH $KERNEL_HEADERS_MAIN" \
-    -DCMAKE_USE_LIBBPF_PACKAGE:BOOL=ON \
     -DENABLE_EXAMPLES:BOOL=OFF -DENABLE_MAN:BOOL=OFF -DENABLE_TESTS:BOOL=OFF .. && \
     cmake --build . --config Release && \
     sudo cmake --install . --config Release
 WORKDIR /home/user
+ENV UAPI_PATH=/home/user/bcc/src/cc/libbpf/include/uapi
 
 # Cloning working repository from GitHub
 RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
@@ -102,7 +74,7 @@ RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
 WORKDIR /home/user/bpf-program/build
 
 # Build main application from sources for armhf arch
-RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOMPAT_DIR=/usr/include/uapi \
+RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DUAPI_DIR=$UAPI_PATH \
     -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
     cmake --build . --config Release && \
     cmake --install .

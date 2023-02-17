@@ -8,16 +8,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(ENABLE_CPP_API ON)
 
 # Finding libbpf
-find_package(bpf REQUIRED)
-if (NOT LIBBPF_FOUND)
-    message(FATAL_ERROR "Not found libbpf, please install it")
-else()
-    message(STATUS "
-    libbpf was found:
-    Include path: ${LIBBPF_INCLUDE_DIR}
-    Dynamic lib path: ${LIBBPF_LIBRARIES}
-    Static lib path: ${LIBBPF_STATIC_LIBRARIES}")
-endif()
+#find_package(bpf REQUIRED)
+#if (NOT LIBBPF_FOUND)
+#    message(FATAL_ERROR "Not found libbpf, please install it")
+#else()
+#    message(STATUS "
+#    libbpf was found:
+#    Include path: ${LIBBPF_INCLUDE_DIR}
+#    Dynamic lib path: ${LIBBPF_LIBRARIES}
+#    Static lib path: ${LIBBPF_STATIC_LIBRARIES}")
+#endif()
 
 # Finding libbcc
 find_package(bcc REQUIRED)
@@ -39,12 +39,12 @@ set(files_cpp
 )
 
 # Adding paths of headers to include
-include_directories(${LIBBPF_INCLUDE_DIR})
+#include_directories(${LIBBPF_INCLUDE_DIR})
 include_directories(${LIBCC_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
-if(COMPAT_DIR)
-    include_directories(${COMPAT_DIR})
+if(UAPI_DIR)
+    include_directories(${UAPI_DIR} "${UAPI_DIR}/..")
 endif()
 
 # Compilation project
