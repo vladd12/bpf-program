@@ -44,7 +44,10 @@ include_directories(${LIBCC_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 if(UAPI_DIR)
-    include_directories(${UAPI_DIR} "${UAPI_DIR}/..")
+    include_directories(
+        ${UAPI_DIR}
+#        "${UAPI_DIR}/.."
+    )
 endif()
 
 # Compilation project
