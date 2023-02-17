@@ -38,3 +38,5 @@ unix*
 CMakeLists.txt.user
 CMakeLists.txt.user*
 *.kate-swp
+*.xz
+*.gz

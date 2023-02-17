@@ -74,10 +74,12 @@ RUN PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig \
     sudo cp root/usr/lib64/pkgconfig/libbpf.pc /usr/lib/arm-linux-gnueabihf/pkgconfig
 WORKDIR /home/user
 
+COPY ./fix.patch /home/user/fix.patch
+
 # Cloning bcc repo from GitHub, building version 0.17.0 (support kernel version 5.9)
 RUN git clone https://github.com/iovisor/bcc.git && cd bcc && \
     git checkout -b stable ad5b82a && \
-    mkdir build && cd ..
+    mkdir build && git apply ../fix.patch && cd ..
 
 # Setting working directory for bcc build
 WORKDIR /home/user/bcc/build
@@ -92,17 +94,17 @@ RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_
 WORKDIR /home/user
 
 # Cloning working repository from GitHub
-#RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
-#    git switch main && \
-#    mkdir build && cd ..
+RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
+    git switch develop && \
+    mkdir build && cd ..
 
 # Setting working directory for application build
-#WORKDIR /home/user/bpf-program/build
+WORKDIR /home/user/bpf-program/build
 
 # Build main application from sources for armhf arch
-#RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOMPAT_DIR=/usr/include/uapi \
-#    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
-#    cmake --build . --config Release && \
-#    cmake --install .
+RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOMPAT_DIR=/usr/include/uapi \
+    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
+    cmake --build . --config Release && \
+    cmake --install .
 
 CMD ["/bin/sh"]
