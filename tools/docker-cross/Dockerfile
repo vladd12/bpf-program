@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt full-upgrade -y && apt install -y --no-install-recommends \
     gcc cmake ninja-build build-essential python3-distutils \
     locales sudo ca-certificates file \
-    git curl nano tar pkg-config \
+    git curl nano tar pkg-config && \
     apt-get -qq clean && \
     rm -rf /var/lib/apt/lists/* 
 
