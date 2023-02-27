@@ -43,9 +43,13 @@ WORKDIR /home/user
 
 COPY ./cross_compiler.tgz /home/user/cross_compiler.tgz
 
+RUN tar -xzf cross_compiler.tgz && \
+    sudo cp -a ./opt/FriendlyARM/toolchain/11.3-aarch64 ./aarch64-cortexa53 && \
+    sudo rm -rf ./opt ./cross_compiler.tgz
+
 # Set C/C++ compilers in environment
-#ENV CC=/usr/bin/arm-linux-gnueabihf-gcc
-#ENV CXX=/usr/bin/arm-linux-gnueabihf-g++
+ENV CC=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-gcc
+ENV CXX=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-g++
 
 # Copying toolchain file in the image
 #COPY ./armhf-gcc-toolchain.cmake /home/user/armhf-gcc-toolchain.cmake
