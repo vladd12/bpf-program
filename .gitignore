@@ -40,3 +40,4 @@ CMakeLists.txt.user*
 *.kate-swp
 *.xz
 *.gz
+*.tgz
