@@ -44,10 +44,7 @@ include_directories(${LIBCC_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 if(UAPI_DIR)
-    include_directories(
-        ${UAPI_DIR}
-#        "${UAPI_DIR}/.."
-    )
+    include_directories(${UAPI_DIR})
 endif()
 
 # Compilation project
@@ -64,8 +61,6 @@ endif()
 # Installing eBPF sources in directory with program
 set(BPF_SOURCE_DIR "${PROJECT_SOURCE_DIR}/bpf")
 install(
-  FILES
-    ${BPF_SOURCE_DIR}/ethernet-parse.c
-  DESTINATION
-    ${CMAKE_BINARY_DIR}/bpf
+  FILES ${BPF_SOURCE_DIR}/ethernet-parse.c
+  DESTINATION ${CMAKE_BINARY_DIR}/bpf
 )

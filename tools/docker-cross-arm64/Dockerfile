@@ -31,7 +31,7 @@ RUN dpkg --add-architecture arm64 && apt update && \
 RUN echo "deb [arch=arm64,amd64] http://ftp.ru.debian.org/debian bullseye main" >> /etc/apt/sources.list && \
     apt update && apt install -y --no-install-recommends linux-libc-dev:arm64 \
     libclang-dev:arm64 libclang-cpp-dev:arm64 llvm-dev:arm64 \
-    libelf-dev:arm64 zlib1g-dev:arm64 && \
+    libelf-dev:arm64 zlib1g-dev:arm64 libbpfcc-dev:arm64 && \
     mkdir /tmp/work
 
 # Add group and user + sudo
@@ -41,8 +41,8 @@ ENV HOME /home/user
 VOLUME /home/user
 WORKDIR /home/user
 
+# Copying cross-compiler and unpacking archive
 COPY ./cross_compiler.tgz /home/user/cross_compiler.tgz
-
 RUN tar -xzf cross_compiler.tgz && \
     sudo cp -a ./opt/FriendlyARM/toolchain/11.3-aarch64 ./aarch64-cortexa53 && \
     sudo rm -rf ./opt ./cross_compiler.tgz
@@ -52,22 +52,19 @@ ENV CC=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-gcc
 ENV CXX=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-g++
 
 # Copying toolchain file in the image
-#COPY ./armhf-gcc-toolchain.cmake /home/user/armhf-gcc-toolchain.cmake
-#ENV TOOLCHAIN_PATH=/home/user/armhf-gcc-toolchain.cmake
-
-
-
+COPY ./aarch64-cortexa53-toolchain.cmake /home/user/aarch64-cortexa53-toolchain.cmake
+ENV TOOLCHAIN_PATH=/home/user/aarch64-cortexa53-toolchain.cmake
 
 # Cloning working repository from GitHub
-#RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
-#    git switch develop && \
-#    mkdir build && cd ..
+RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
+    git switch develop && \
+    mkdir build && cd ..
 
 # Setting working directory for application build
-#WORKDIR /home/user/bpf-program/build
+WORKDIR /home/user/bpf-program/build
 
 # Build main application from sources for armhf arch
-#RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DUAPI_DIR=$UAPI_PATH \
+#RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
 #    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
 #    cmake --build . --config Release && \
 #    cmake --install .
