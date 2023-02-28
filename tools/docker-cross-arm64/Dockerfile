@@ -22,6 +22,7 @@ RUN dpkg --add-architecture arm64 && apt update && \
     binutils:amd64 \
     libstdc++-10-dev:arm64 \
     gcc-aarch64-linux-gnu \
+    binutils-aarch64-linux-gnu \
     cross-config \
     crossbuild-essential-arm64 && \
     apt-get -qq clean && \
@@ -54,6 +55,7 @@ ENV CXX=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-g++
 # Copying toolchain file in the image
 COPY ./aarch64-cortexa53-toolchain.cmake /home/user/aarch64-cortexa53-toolchain.cmake
 ENV TOOLCHAIN_PATH=/home/user/aarch64-cortexa53-toolchain.cmake
+ENV LIBRARY_PATH=/usr/lib/aarch64-linux-gnu
 
 # Cloning working repository from GitHub
 RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \

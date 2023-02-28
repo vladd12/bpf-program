@@ -23,10 +23,10 @@ set(ENABLE_CPP_API ON)
 find_package(bcc REQUIRED)
 if (NOT LIBBCC_FOUND)
     message(FATAL_ERROR "Not found libbcc, please install it")
-else() 
+else()
     message(STATUS "
     libbcc was found:
-    Include path: ${LIBCC_INCLUDE_DIR}
+    Include path: ${LIBBCC_INCLUDE_DIR}
     Dynamic lib path: ${LIBBCC_LIBRARIES}
     Static lib path: ${LIBBCC_STATIC_LIBRARIES}")
 endif()
@@ -40,7 +40,7 @@ set(files_cpp
 
 # Adding paths of headers to include
 #include_directories(${LIBBPF_INCLUDE_DIR})
-include_directories(${LIBCC_INCLUDE_DIR})
+include_directories(${LIBBCC_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 if(UAPI_DIR)
