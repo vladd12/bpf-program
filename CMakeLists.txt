@@ -40,7 +40,6 @@ set(files_cpp
 
 # Adding paths of headers to include
 #include_directories(${LIBBPF_INCLUDE_DIR})
-include_directories(${LIBBCC_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 if(UAPI_DIR)
@@ -52,6 +51,7 @@ add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})
 
 # Linking libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBCC_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${LIBBCC_INCLUDE_DIR})
 
 # Some compilation flags
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
