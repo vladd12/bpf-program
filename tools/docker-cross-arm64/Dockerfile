@@ -42,18 +42,9 @@ ENV HOME /home/user
 VOLUME /home/user
 WORKDIR /home/user
 
-# Copying cross-compiler and unpacking archive
-#COPY ./cross_compiler.tgz /home/user/cross_compiler.tgz
-#RUN tar -xzf cross_compiler.tgz && \
-#    sudo cp -a ./opt/FriendlyARM/toolchain/11.3-aarch64 ./aarch64-cortexa53 && \
-#    sudo rm -rf ./opt ./cross_compiler.tgz
-
 # Set C/C++ compilers in environment
-#ENV CC=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-gcc
-#ENV CXX=/home/user/aarch64-cortexa53/bin/aarch64-cortexa53-linux-gnu-g++
 ENV CC=aarch64-linux-gnu-gcc
 ENV CXX=aarch64-linux-gnu-g++
-
 
 # Copying toolchain file in the image
 COPY ./aarch64-cortexa53-toolchain.cmake /home/user/aarch64-cortexa53-toolchain.cmake
@@ -69,9 +60,10 @@ RUN git clone https://github.com/vladd12/bpf-program.git && cd bpf-program && \
 WORKDIR /home/user/bpf-program/build
 
 # Build main application from sources for armhf arch
-#RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
-#    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
-#    cmake --build . --config Release && \
-#    cmake --install .
+RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
+    cmake --build . --config Release && \
+    chmod ugo+x bpf_test && \
+    cmake --install .
 
 CMD ["/bin/sh"]

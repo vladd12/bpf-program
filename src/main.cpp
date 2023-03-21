@@ -63,6 +63,8 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
     std::cin >> srcMac;
     std::cout << "Enter the sample values ID: ";
     std::cin >> svID;
+    // test
+    std::cout << "Test input: " << iface << ' ' << srcMac << ' ' << svID << '\n';
 }
 
 int main()
@@ -71,7 +73,7 @@ int main()
     auto ifaceName = std::string("enp0s8");          //
     auto srcMacAddr = std::string("0x0cefaf3042cc"); //
     auto svID = std::string("ENS80pointMU01");
-    // inputData(ifaceName, srcMacAddr, svID);
+    inputData(ifaceName, srcMacAddr, svID);
 
     auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", ifaceName, srcMacAddr, svID);
     if (sock >= 0)
