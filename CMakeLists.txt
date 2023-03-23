@@ -37,13 +37,15 @@ endif()
 set(files_h
     include/common.h
     include/bpf_wrap.h
-#    include/code_formater.h
+    include/code_formater.h
+    include/utils.h
 )
 
 set(files_cpp
     src/bpf_wrap.cpp
-#    src/code_formater.cpp
+    src/code_formater.cpp
     src/main.cpp
+    src/utils.cpp
 )
 
 # Adding paths of headers to include

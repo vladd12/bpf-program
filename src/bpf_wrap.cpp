@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <utils.h>
 
 const static auto svReplacement1 = R"(char cmp_str[] = "%SV_ID";)";
 const static auto svReplacement2 = R"(
@@ -17,38 +18,6 @@ BpfWrapper::BpfWrapper() : bpfPtr(new ebpf::BPF), bpfProg()
 {
 }
 
-std::string BpfWrapper::read_file(const std::string_view &filepath)
-{
-    constexpr auto read_size = std::size_t(4096);
-    auto stream = std::ifstream(filepath.data());
-    stream.exceptions(std::ios_base::badbit);
-
-    auto out = std::string();
-    auto buf = std::string(read_size, '\0');
-    while (stream.read(&buf[0], read_size))
-        out.append(buf, 0, stream.gcount());
-
-    out.append(buf, 0, stream.gcount());
-    return out;
-}
-
-std::size_t BpfWrapper::replace_all(std::string &inout, const std::string_view what, const std::string_view with)
-{
-    auto count = std::size_t(0);
-    for (auto pos = std::string::size_type {};                              //
-         inout.npos != (pos = inout.find(what.data(), pos, what.length())); //
-         pos += with.length(), ++count)                                     //
-    {
-        inout.replace(pos, what.length(), with.data(), with.length());
-    }
-    return count;
-}
-
-std::size_t BpfWrapper::remove_all(std::string &inout, const std::string_view what)
-{
-    return replace_all(inout, what, "");
-}
-
 void BpfWrapper::filter_iface_mac(const std::string &ifaceName)
 {
     // Replacing ethernet interface MAC address
@@ -56,13 +25,13 @@ void BpfWrapper::filter_iface_mac(const std::string &ifaceName)
     if (!ifaceName.empty())
     {
         auto deviceAddressFilepath = "/sys/class/net/" + ifaceName + "/address";
-        auto addressText = read_file(deviceAddressFilepath);
-        remove_all(addressText, ":");
-        remove_all(addressText, "\n");
-        replace_all(bpfProg, ifacePlaceholder, "0x" + addressText);
+        auto addressText = util::read_file(deviceAddressFilepath);
+        util::remove_all(addressText, ":");
+        util::remove_all(addressText, "\n");
+        util::replace_all(bpfProg, ifacePlaceholder, "0x" + addressText);
     }
     else
-        replace_all(bpfProg, ifacePlaceholder, "0xFFFFFFFFFFFF");
+        util::replace_all(bpfProg, ifacePlaceholder, "0xFFFFFFFFFFFF");
 }
 
 void BpfWrapper::filter_src_mac(const std::string &srcMac)
@@ -70,9 +39,9 @@ void BpfWrapper::filter_src_mac(const std::string &srcMac)
     // Replacing remote device MAC address
     constexpr auto srcMacPlaceholder = "%SRC_MAC";
     if (!srcMac.empty())
-        replace_all(bpfProg, srcMacPlaceholder, srcMac);
+        util::replace_all(bpfProg, srcMacPlaceholder, srcMac);
     else
-        replace_all(bpfProg, srcMacPlaceholder, "sourceMac");
+        util::replace_all(bpfProg, srcMacPlaceholder, "sourceMac");
 }
 
 void BpfWrapper::filter_sv_id(const std::string &svID)
@@ -80,11 +49,11 @@ void BpfWrapper::filter_sv_id(const std::string &svID)
     // Replacing sample values ID with specified
     constexpr auto svIdPlaceholder = "%SV_ID";
     if (!svID.empty())
-        replace_all(bpfProg, svIdPlaceholder, svID);
+        util::replace_all(bpfProg, svIdPlaceholder, svID);
     else
     {
-        replace_all(bpfProg, svReplacement1, "char const *cmp_str = str;");
-        remove_all(bpfProg, svReplacement2);
+        util::replace_all(bpfProg, svReplacement1, "char const *cmp_str = str;");
+        util::remove_all(bpfProg, svReplacement2);
     }
 }
 
@@ -139,7 +108,7 @@ int BpfWrapper::get_raw_socket(const std::string &ifaceName)
 
 void BpfWrapper::initByFile(const std::string &programPath)
 {
-    bpfProg = read_file(programPath);
+    bpfProg = util::read_file(programPath);
 }
 
 ebpf::StatusTuple BpfWrapper::filterProgText(const std::string &iface, const std::string &srcMac, const std::string &svID)

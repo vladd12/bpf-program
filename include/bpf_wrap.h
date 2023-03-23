@@ -9,15 +9,6 @@ private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
     std::string bpfProg;
 
-    /// \brief Reading file specified by filepath in std::string.
-    std::string read_file(const std::string_view &filepath);
-
-    /// \brief Replacing all substrings "what" with "with".
-    std::size_t replace_all(std::string &inout, std::string_view what, std::string_view with);
-
-    /// \brief Removing all substrings "what".
-    std::size_t remove_all(std::string &inout, std::string_view what);
-
     void filter_iface_mac(const std::string &ifaceName);
     void filter_src_mac(const std::string &srcMac);
     void filter_sv_id(const std::string &svID);
