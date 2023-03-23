@@ -18,6 +18,7 @@ std::string replace_all(const std::string &in, const std::string_view what, cons
 /// \brief Removing all substrings "what".
 std::string remove_all(const std::string &in, const std::string_view what);
 
-std::string get_mac_by_iface_name();
+/// \brief Getting the device's MAC address by the name of ethernet interface.
+std::string get_mac_by_iface_name(const std::string &ifaceName);
 
 }

@@ -4,11 +4,9 @@
 #include <net/ethernet.h>
 #include <sys/socket.h>
 
-int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string &programPath, //
-    const std::string &funcName, const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
+int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string &funcName, const std::string &ifaceName)
 {
-    bpf->initByFile(programPath);
-    auto status = bpf->filterProgText(ifaceName, srcMac, svID);
+    auto status = bpf->run();
     if (status.ok())
     {
         int fd_func = -1, sock_fd = -1;
@@ -31,7 +29,7 @@ void printMacAddr(const std::uint8_t macAddr[])
     printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 }
 
-void test2(int &sock)
+void test(int &sock)
 {
     constexpr std::size_t bufSize = 2048;
     auto buffer = new std::uint8_t[bufSize];
@@ -69,17 +67,17 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 
 int main()
 {
-    auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper);
+    auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper("bpf/ethernet-parse.c"));
     auto ifaceName = std::string("enp0s8");          //
     auto srcMacAddr = std::string("0x0cefaf3042cc"); //
     auto svID = std::string("ENS80pointMU01");
     inputData(ifaceName, srcMacAddr, svID);
+    bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
-    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "bpf/ethernet-parse.c", "iec61850_filter", ifaceName, srcMacAddr, svID);
+    auto sock = loadBpfProgrammSockPrepare(bpf.get(), "iec61850_filter", ifaceName);
     if (sock >= 0)
     {
-        // test(sock);
-        test2(sock);
+        test(sock);
     }
     return 0;
 }

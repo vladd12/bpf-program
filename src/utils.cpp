@@ -38,3 +38,17 @@ std::string util::remove_all(const std::string &in, const std::string_view what)
 {
     return util::replace_all(in, what, "");
 }
+
+std::string util::get_mac_by_iface_name(const std::string &ifaceName)
+{
+    if (!ifaceName.empty())
+    {
+        auto deviceAddressFilepath = "/sys/class/net/" + ifaceName + "/address";
+        auto addressText = util::read_file(deviceAddressFilepath);
+        util::remove_all(addressText, ":");
+        util::remove_all(addressText, "\n");
+        return "0x" + addressText;
+    }
+    else
+        return "0xFFFFFFFFFFFF";
+}

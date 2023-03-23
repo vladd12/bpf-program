@@ -16,9 +16,9 @@ using PerfSWConfig = perf_sw_ids;
 using PerfEventSampleFormat = perf_event_sample_format;
 using BpfProgType = bpf_prog_type;
 using BpfAttachType = bpf_attach_type;
-using XdpAction = xdp_action;
+using XDPAction = xdp_action;
 
-enum XdpFlags : std::uint8_t
+enum XDPFlags : std::uint8_t
 {
     UPDATE_IF_NOEXIST = XDP_FLAGS_UPDATE_IF_NOEXIST,
     SKB_MODE = XDP_FLAGS_SKB_MODE,

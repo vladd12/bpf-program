@@ -5,19 +5,6 @@ project(bpf_test LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-set(ENABLE_CPP_API ON)
-
-# Finding libbpf
-#find_package(bpf REQUIRED)
-#if (NOT LIBBPF_FOUND)
-#    message(FATAL_ERROR "Not found libbpf, please install it")
-#else()
-#    message(STATUS "
-#    libbpf was found:
-#    Include path: ${LIBBPF_INCLUDE_DIR}
-#    Dynamic lib path: ${LIBBPF_LIBRARIES}
-#    Static lib path: ${LIBBPF_STATIC_LIBRARIES}")
-#endif()
 
 # Finding libbcc
 find_package(bcc REQUIRED)
@@ -32,15 +19,12 @@ else()
 endif()
 
 # Collecting sources of project
-#file(GLOB_RECURSE files_h include/*.h)
-
 set(files_h
     include/common.h
     include/bpf_wrap.h
     include/code_formater.h
     include/utils.h
 )
-
 set(files_cpp
     src/bpf_wrap.cpp
     src/code_formater.cpp
@@ -49,12 +33,7 @@ set(files_cpp
 )
 
 # Adding paths of headers to include
-#include_directories(${LIBBPF_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
-
-#if(UAPI_DIR)
-#    include_directories(${UAPI_DIR})
-#endif()
 
 # Compilation project
 add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})

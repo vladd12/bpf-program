@@ -93,26 +93,11 @@ int iec61850_filter(struct __sk_buff *skb) {
     struct sv_start_t *sv_start = cursor_advance(cursor, sizeof(*sv_start));
     struct sv_savPDU_80p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
     struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
+
     unsigned long payloadOfsset = sizeof(*ethernet) + sizeof(*sv_start) + sizeof(*savPDU) + sizeof(*asduHead);
     const u8 len = asduHead->svIdLength;
-
-//    char *svID = cursor_advance(cursor, len);
-//    if (svID == NULL) {
-//        goto DROP;
-//    }
-
-//    char sv_str[] = "%SV_ID";
-//    if ((sizeof(sv_str) - 1) != len) {
-//        goto DROP;
-//    }
-//    char buffer[sizeof(sv_str) - 1];
-//    for (int i = 0; i < sizeof(sv_str) - 1; i++) {
-//        buffer[i] = load_byte(skb, ofsset + i);
-//        bpf_trace_printk("%x %x", sv_str[i], buffer[i]);
-//    }
-
     bool cmp = SV_CMP(skb, payloadOfsset, len);
-    if (cmp == true) {
+    if (cmp) {
         bpf_trace_printk("It's Ok");
     }
     else {
