@@ -1,4 +1,4 @@
-#include <BpfWrapper.h>
+#include <bpf_wrap.h>
 
 // Linux
 #include <net/ethernet.h>

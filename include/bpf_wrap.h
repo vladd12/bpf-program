@@ -32,7 +32,7 @@ public:
     /// \brief Initializations eBPF program from file specified by programPath.
     void initByFile(const std::string &programPath);
 
-    ///
+    /// \brief Filtering BPF program source code.
     ebpf::StatusTuple filterProgText(const std::string &iface, const std::string &srcMac, const std::string &svID);
 
     /// \brief Returns eBPF object stored in ebpf::BPF smart pointer.

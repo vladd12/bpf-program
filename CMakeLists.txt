@@ -32,9 +32,17 @@ else()
 endif()
 
 # Collecting sources of project
-file(GLOB_RECURSE files_h include/*.h)
+#file(GLOB_RECURSE files_h include/*.h)
+
+set(files_h
+    include/common.h
+    include/bpf_wrap.h
+#    include/code_formater.h
+)
+
 set(files_cpp
-    src/BpfWrapper.cpp
+    src/bpf_wrap.cpp
+#    src/code_formater.cpp
     src/main.cpp
 )
 
@@ -42,9 +50,9 @@ set(files_cpp
 #include_directories(${LIBBPF_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
-if(UAPI_DIR)
-    include_directories(${UAPI_DIR})
-endif()
+#if(UAPI_DIR)
+#    include_directories(${UAPI_DIR})
+#endif()
 
 # Compilation project
 add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})
