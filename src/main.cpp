@@ -1,33 +1,10 @@
 #include <bpf_wrap.h>
+#include <iostream>
+#include <utils.h>
 
 // Linux
 #include <net/ethernet.h>
 #include <sys/socket.h>
-
-// int loadBpfProgrammSockPrepare(BpfWrapper *bpf, const std::string &funcName, const std::string &ifaceName)
-//{
-//    auto status = bpf->run();
-//    if (status.ok())
-//    {
-//        int fd_func = -1, sock_fd = -1;
-//        auto bpfObject = bpf->getBpfObject();
-//        status = bpfObject->load_func(funcName, BPF_PROG_TYPE_SOCKET_FILTER, fd_func);
-//        if (status.ok())
-//        {
-//            // name of device may be eth0, eth1, etc (see ifconfig or ip a)...
-//            status = bpf->attachRawSocket(ifaceName, fd_func, sock_fd);
-//            if (status.ok())
-//                return sock_fd;
-//        }
-//    }
-//    printStatusMsg(status);
-//    return -1;
-//}
-
-void printMacAddr(const std::uint8_t macAddr[6])
-{
-    printf("0x%02X%02X%02X%02X%02X%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
-}
 
 void test(int &sock)
 {
@@ -42,9 +19,9 @@ void test(int &sock)
             auto iter = buffer;
             auto ethernetHeader = reinterpret_cast<ether_header *>(iter);
             std::cout << "Dst MAC address: ";
-            printMacAddr(ethernetHeader->ether_dhost);
+            util::printMacAddress(ethernetHeader->ether_dhost);
             std::cout << "Src MAC address: ";
-            printMacAddr(ethernetHeader->ether_shost);
+            util::printMacAddress(ethernetHeader->ether_shost);
             iter += sizeof(ether_header);
             printf("Count: %010lu \n\n", count);
             count = count + 1;
@@ -84,13 +61,6 @@ int main()
             test(sock);
         }
     }
-    printStatusMsg(status);
-
-    // auto sock = loadBpfProgrammSockPrepare(bpf.get(), "iec61850_filter", ifaceName);
-    // if (sock >= 0)
-    //{
-    //   test(sock);
-    //}
-
+    util::printStatusMessage(status);
     return 0;
 }

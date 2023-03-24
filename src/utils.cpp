@@ -1,3 +1,4 @@
+#include <iostream>
 #include <utils.h>
 
 std::string util::read_file(std::ifstream &stream)
@@ -51,4 +52,14 @@ std::string util::get_mac_by_iface_name(const std::string &ifaceName)
     }
     else
         return "0xFFFFFFFFFFFF";
+}
+
+void util::printStatusMessage(const ebpf::StatusTuple &status)
+{
+    std::cout << status.msg() << '\n';
+}
+
+void util::printMacAddress(const std::uint8_t mac[ETH_ALEN])
+{
+    printf("0x%02X%02X%02X%02X%02X%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }

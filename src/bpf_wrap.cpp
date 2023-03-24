@@ -11,6 +11,9 @@
 #include <sys/socket.h>
 #include <utils.h>
 
+/// TODO: temporary, remove later
+#include <iostream>
+
 BpfWrapper::BpfWrapper(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
 {
 }
@@ -115,7 +118,7 @@ ebpf::StatusTuple BpfWrapper::getDeviceSocket(int &sock_fd, const std::string &f
     auto status = bpfPtr->load_func(functionName, BPF_PROG_TYPE_SOCKET_FILTER, fd_func);
     if (status.ok())
     {
-        // name of device may be eth0, eth1, etc (see ifconfig or ip a)...
+        // name of device may be eth0, eth1, etc (see 'ifconfig' or 'ip a')...
         status = attachRawSocket(ifaceName, fd_func, sock_fd);
     }
     return status;

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <bcc/bcc_exception.h>
+#include <cstdint>
 #include <fstream>
+#include <linux/if_ether.h>
 #include <string>
 
 namespace util
@@ -20,5 +23,11 @@ std::string remove_all(const std::string &in, const std::string_view what);
 
 /// \brief Getting the device's MAC address by the name of ethernet interface.
 std::string get_mac_by_iface_name(const std::string &ifaceName);
+
+/// \brief Printing ebpf::StatusTuple to the standard output stream.
+void printStatusMessage(const ebpf::StatusTuple &status);
+
+/// \brief Printing ethernet MAC address to the standard output stream.
+void printMacAddress(const std::uint8_t mac[]);
 
 }

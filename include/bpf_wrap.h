@@ -2,7 +2,6 @@
 
 #include <bcc/BPF.h>
 #include <code_formater.h>
-#include <common.h>
 
 class BpfWrapper
 {
@@ -26,5 +25,10 @@ public:
     /// \brief Running BPF program.
     ebpf::StatusTuple run();
 
+    /// \brief Getting device socket, that associated with the BPF program function.
+    /// \param sock_fd [in, out] - the associated with BPF function socket.
+    /// \param functionName [in] - name of the executed function of BPF program.
+    /// \param ifaceName [in] - name of the network interface, using for creating the device socket.
+    /// \return Status of creating and attaching the raw socket to the associated function.
     ebpf::StatusTuple getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName);
 };

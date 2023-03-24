@@ -20,7 +20,6 @@ endif()
 
 # Collecting sources of project
 set(files_h
-    include/common.h
     include/bpf_wrap.h
     include/code_formater.h
     include/utils.h
