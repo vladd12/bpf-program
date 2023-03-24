@@ -6,28 +6,47 @@
 #include <net/ethernet.h>
 #include <sys/socket.h>
 
+using byte = std::uint8_t;
+using word = std::uint16_t;
+using dword = std::uint32_t;
+
+constexpr word makeword(const byte &lhs, const byte &rhs)
+{
+    return (lhs << 8 | rhs);
+}
+
 void test(int &sock)
 {
     constexpr std::size_t bufSize = 2048;
+    constexpr std::size_t smpCnt80pOffset = 35;
+
+    std::uint16_t max = 0;
+    std::uint16_t min = UINT16_MAX;
+
     auto buffer = new std::uint8_t[bufSize];
-    std::uint64_t count = 0;
     while (true)
     {
         auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
         if (rcStat >= 0)
         {
             auto iter = buffer;
-            auto ethernetHeader = reinterpret_cast<ether_header *>(iter);
-            std::cout << "Dst MAC address: ";
-            util::printMacAddress(ethernetHeader->ether_dhost);
-            std::cout << "Src MAC address: ";
-            util::printMacAddress(ethernetHeader->ether_shost);
             iter += sizeof(ether_header);
-            printf("Count: %010lu \n\n", count);
-            count = count + 1;
+            iter += smpCnt80pOffset;
+            auto smpCnt1 = reinterpret_cast<std::uint8_t *>(iter++);
+            auto smpCnt2 = reinterpret_cast<std::uint8_t *>(iter++);
+            auto smpCnt = makeword(*smpCnt1, *smpCnt2);
+            auto id = reinterpret_cast<std::uint8_t *>(iter++);
+            printf("Count: %04X %02X \n", smpCnt, *id);
+            if (smpCnt > max)
+                max = smpCnt;
+            if (smpCnt < min)
+                min = smpCnt;
+            if (max > smpCnt && min < smpCnt)
+                break;
         }
     }
     delete[] buffer;
+    std::cout << "Min: " << min << "\nMax: " << max << "\n\n";
 }
 
 void inputData(std::string &iface, std::string &srcMac, std::string &svID)

@@ -97,11 +97,9 @@ int iec61850_filter(struct __sk_buff *skb) {
     unsigned long payloadOfsset = sizeof(*ethernet) + sizeof(*sv_start) + sizeof(*savPDU) + sizeof(*asduHead);
     const u8 len = asduHead->svIdLength;
     bool cmp = SV_CMP(skb, payloadOfsset, len);
-    if (cmp) {
-        bpf_trace_printk("It's Ok");
-    }
-    else {
-        bpf_trace_printk("It's not Ok :(");
+    if (!cmp) {
+        // bpf_trace_printk("It's not Ok :(");
+        goto DROP;
     }
 
     goto KEEP;
