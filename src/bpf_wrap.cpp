@@ -1,18 +1,21 @@
 #include <bpf_wrap.h>
 #include <cstdio>
 #include <fstream>
+#include <linux/bpf.h>
 #include <linux/if_ether.h>
+#include <linux/if_link.h>
+#include <linux/perf_event.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <utils.h>
 
-BpfWrapper::BpfWrapper(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfSrc(util::read_file(programPath))
+BpfWrapper::BpfWrapper(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
 {
 }
 
-int BpfWrapper::get_raw_socket(const std::string &ifaceName)
+int BpfWrapper::getRawSocket(const std::string &ifaceName)
 {
     constexpr int error = -1;
     int status = error;
@@ -61,7 +64,7 @@ int BpfWrapper::get_raw_socket(const std::string &ifaceName)
     return sock_fd;
 }
 
-void BpfWrapper::filterSourceCode(const std::string &iface, const std::string &srcMac, const std::string &svID)
+void BpfWrapper::filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
 {
     constexpr static auto svReplacement1 = R"(char cmp_str[] = "%SV_ID";)";
     constexpr static auto svReplacement2 = R"(
@@ -69,33 +72,28 @@ void BpfWrapper::filterSourceCode(const std::string &iface, const std::string &s
             return false;
     )";
 
-    bpfSrc.replace("%IFACE_MAC", util::get_mac_by_iface_name(iface));
-    bpfSrc.replace("%SRC_MAC", srcMac);
+    bpfProg.replace("%IFACE_MAC", util::get_mac_by_iface_name(ifaceName));
+    bpfProg.replace("%SRC_MAC", srcMac);
     if (!svID.empty())
-        bpfSrc.replace("%SV_ID", svID);
+        bpfProg.replace("%SV_ID", svID);
     else
     {
-        bpfSrc.replace(svReplacement1, "char const *cmp_str = str;");
-        bpfSrc.remove(svReplacement2);
+        bpfProg.replace(svReplacement1, "char const *cmp_str = str;");
+        bpfProg.remove(svReplacement2);
     }
 
     /// TODO: replace it
-    std::cout << "code:\n\n" << bpfSrc.getSourceCode() << "\n\n";
+    std::cout << "code:\n\n" << bpfProg.getSourceCode() << "\n\n";
 }
 
 ebpf::StatusTuple BpfWrapper::run()
 {
-    return bpfPtr->init(bpfSrc.getSourceCode());
-}
-
-ebpf::BPF *BpfWrapper::getBpfObject()
-{
-    return bpfPtr.get();
+    return bpfPtr->init(bpfProg.getSourceCode());
 }
 
 ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
 {
-    socket = get_raw_socket(ifaceName);
+    socket = getRawSocket(ifaceName);
     if (socket >= 0)
     {
         auto result = bpf_attach_socket(socket, function);
@@ -109,4 +107,16 @@ ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &ifaceName, cons
     }
     else
         return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", ifaceName.c_str());
+}
+
+ebpf::StatusTuple BpfWrapper::getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName)
+{
+    int fd_func = -1;
+    auto status = bpfPtr->load_func(functionName, BPF_PROG_TYPE_SOCKET_FILTER, fd_func);
+    if (status.ok())
+    {
+        // name of device may be eth0, eth1, etc (see ifconfig or ip a)...
+        status = attachRawSocket(ifaceName, fd_func, sock_fd);
+    }
+    return status;
 }
