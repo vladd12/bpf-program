@@ -1,4 +1,5 @@
 #include <bpf_wrap.h>
+#include <exception>
 #include <iostream>
 #include <utils.h>
 
@@ -19,30 +20,53 @@ void test(int &sock)
 {
     constexpr std::size_t bufSize = 2048;
     constexpr std::size_t smpCnt80pOffset = 35;
+    constexpr word smpCntMax = 3999;
 
-    std::uint16_t max = 0;
-    std::uint16_t min = UINT16_MAX;
+    word min = UINT16_MAX, max = 0, prev = 0, curr = 1;
+    bool firstTime = true;
 
-    auto buffer = new std::uint8_t[bufSize];
+    auto buffer = new byte[bufSize];
     while (true)
     {
         auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
         if (rcStat >= 0)
         {
+            if (!firstTime)
+                prev = curr;
+
             auto iter = buffer;
             iter += sizeof(ether_header);
             iter += smpCnt80pOffset;
-            auto smpCnt1 = reinterpret_cast<std::uint8_t *>(iter++);
-            auto smpCnt2 = reinterpret_cast<std::uint8_t *>(iter++);
-            auto smpCnt = makeword(*smpCnt1, *smpCnt2);
-            auto id = reinterpret_cast<std::uint8_t *>(iter++);
-            printf("Count: %04X %02X \n", smpCnt, *id);
-            if (smpCnt > max)
-                max = smpCnt;
-            if (smpCnt < min)
-                min = smpCnt;
-            if (max > smpCnt && min < smpCnt)
-                break;
+            auto smpCnt1 = reinterpret_cast<byte *>(iter++);
+            auto smpCnt2 = reinterpret_cast<byte *>(iter++);
+            curr = makeword(*smpCnt1, *smpCnt2);
+            // auto id = reinterpret_cast<byte *>(iter++);
+            // printf("Count: %04X %02X \n", curr, *id);
+
+            if (!firstTime)
+            {
+                if (curr == 0)
+                {
+                    if (prev != smpCntMax)
+                        throw std::runtime_error("Packet missed");
+                }
+                else
+                {
+                    printf("Previous: %04X, current: %04X \n", prev, curr);
+                    auto offset = curr - prev;
+                    if (offset > 1)
+                        throw std::runtime_error("Packet missed");
+                }
+            }
+
+            if (curr > max)
+                max = curr;
+            if (curr < min)
+                min = curr;
+            if (firstTime)
+                firstTime = false;
+            // if (max > curr && min < curr)
+            //    break;
         }
     }
     delete[] buffer;
