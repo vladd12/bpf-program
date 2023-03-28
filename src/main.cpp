@@ -1,5 +1,6 @@
 #include <bpf_wrap.h>
 #include <exception>
+#include <fast_file.h>
 #include <iostream>
 #include <utils.h>
 
@@ -24,8 +25,10 @@ void test(int &sock)
 
     word min = UINT16_MAX, max = 0, prev = 0, curr = 1;
     bool firstTime = true;
-
     auto buffer = new byte[bufSize];
+    auto file = FastFile("out.txt");
+    printf("Start work\n");
+
     while (true)
     {
         auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
@@ -52,11 +55,12 @@ void test(int &sock)
                 }
                 else
                 {
-                    printf("Previous: %04X, current: %04X \n", prev, curr);
+                    // printf("Previous: %04X, current: %04X \n", prev, curr);
                     auto offset = curr - prev;
                     if (offset > 1)
                         throw std::runtime_error("Packet missed");
                 }
+                file.write(curr);
             }
 
             if (curr > max)

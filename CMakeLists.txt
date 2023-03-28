@@ -22,11 +22,13 @@ endif()
 set(files_h
     include/bpf_wrap.h
     include/code_formater.h
+    include/fast_file.h
     include/utils.h
 )
 set(files_cpp
     src/bpf_wrap.cpp
     src/code_formater.cpp
+    src/fast_file.cpp
     src/main.cpp
     src/utils.cpp
 )
