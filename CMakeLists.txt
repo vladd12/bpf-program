@@ -9,6 +9,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 # Project options
 option(BUILD_BENCHMARKS "Building benchmarks" ON)
 
+# Setting project build type, if not specified
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+    message(STATUS "CMAKE_BUILD_TYPE is not specified. Using default: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # Finding libbcc
 find_package(bcc REQUIRED)
 if (NOT LIBBCC_FOUND)
