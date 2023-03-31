@@ -6,13 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
+# Project options
+option(BUILD_BENCHMARKS "Building benchmarks" ON)
+
 # Finding libbcc
 find_package(bcc REQUIRED)
 if (NOT LIBBCC_FOUND)
     message(FATAL_ERROR "Not found libbcc, please install it")
 else()
-    message(STATUS "
-    libbcc was found:
+    message(STATUS "libbcc was found:
     Include path: ${LIBBCC_INCLUDE_DIR}
     Dynamic lib path: ${LIBBCC_LIBRARIES}
     Static lib path: ${LIBBCC_STATIC_LIBRARIES}")
@@ -42,6 +44,12 @@ add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})
 # Linking libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBCC_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${LIBBCC_INCLUDE_DIR})
+
+# Building benchmarks with project
+if (BUILD_BENCHMARKS)
+    include(get_gbench)
+    add_subdirectory(benchmarks)
+endif()
 
 # Some compilation flags
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
