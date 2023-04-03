@@ -11,5 +11,5 @@ docker ps
 
 # Copying build files
 cd C:/Temp/files
-docker cp <ID>:/home/user/bpf-program/build/bpf_test bpf_test
+docker cp <ID>:/home/user/bpf-program/build/bpf_app bpf_app
 docker cp <ID>:/home/user/bpf-program/build/bpf .

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(bpf_test LANGUAGES CXX)
+project(bpf_app LANGUAGES CXX)
 
 # Initial project settings
 set(CMAKE_CXX_STANDARD 17)
@@ -27,29 +27,33 @@ else()
 endif()
 
 # Collecting sources of project
-set(files_h
+set(bpf_core_h
     include/bpf_wrap.h
     include/code_formater.h
     include/fast_file.h
     include/utils.h
 )
-set(files_cpp
+set(bpf_core_cpp
     src/bpf_wrap.cpp
     src/code_formater.cpp
     src/fast_file.cpp
-    src/main.cpp
     src/utils.cpp
 )
+set(bpf_app_cpp src/main.cpp)
 
 # Adding paths of headers to include
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
-# Compilation project
-add_executable(${PROJECT_NAME} ${files_h} ${files_cpp})
+# Compilation static library as part of project
+add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
 
 # Linking libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBBCC_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${LIBBCC_INCLUDE_DIR})
+target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES})
+target_include_directories(bpf_core PUBLIC ${LIBBCC_INCLUDE_DIR})
+
+# Compilation application
+add_executable(${PROJECT_NAME} ${bpf_app_cpp})
+target_link_libraries(${PROJECT_NAME} PUBLIC bpf_core)
 
 # Building benchmarks with project
 if (BUILD_BENCHMARKS)
