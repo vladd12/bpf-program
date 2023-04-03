@@ -31,12 +31,14 @@ set(bpf_core_h
     include/bpf_exec.h
     include/code_formater.h
     include/fast_file.h
+    include/iec_parser.h
     include/utils.h
 )
 set(bpf_core_cpp
     src/bpf_exec.cpp
     src/code_formater.cpp
     src/fast_file.cpp
+    src/iec_parser.cpp
     src/utils.cpp
 )
 set(bpf_app_cpp src/main.cpp)
