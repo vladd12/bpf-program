@@ -1,4 +1,4 @@
-#include <bpf_wrap.h>
+#include <bpf_exec.h>
 #include <cstdio>
 #include <fstream>
 #include <linux/bpf.h>
@@ -14,11 +14,11 @@
 /// TODO: temporary, remove later
 #include <iostream>
 
-BpfWrapper::BpfWrapper(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
+BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
 {
 }
 
-int BpfWrapper::getRawSocket(const std::string &ifaceName)
+int BpfExec::getRawSocket(const std::string &ifaceName)
 {
     constexpr int error = -1;
     int status = error;
@@ -67,7 +67,7 @@ int BpfWrapper::getRawSocket(const std::string &ifaceName)
     return sock_fd;
 }
 
-void BpfWrapper::filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
+void BpfExec::filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
 {
     constexpr static auto svReplacement1 = R"(char cmp_str[] = "%SV_ID";)";
     constexpr static auto svReplacement2 = R"(
@@ -89,12 +89,12 @@ void BpfWrapper::filterSourceCode(const std::string &ifaceName, const std::strin
     std::cout << "code:\n\n" << bpfProg.getSourceCode() << "\n\n";
 }
 
-ebpf::StatusTuple BpfWrapper::run()
+ebpf::StatusTuple BpfExec::run()
 {
     return bpfPtr->init(bpfProg.getSourceCode());
 }
 
-ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
+ebpf::StatusTuple BpfExec::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
 {
     socket = getRawSocket(ifaceName);
     if (socket >= 0)
@@ -112,7 +112,7 @@ ebpf::StatusTuple BpfWrapper::attachRawSocket(const std::string &ifaceName, cons
         return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", ifaceName.c_str());
 }
 
-ebpf::StatusTuple BpfWrapper::getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName)
+ebpf::StatusTuple BpfExec::getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName)
 {
     int fd_func = -1;
     auto status = bpfPtr->load_func(functionName, BPF_PROG_TYPE_SOCKET_FILTER, fd_func);

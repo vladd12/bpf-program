@@ -28,13 +28,13 @@ endif()
 
 # Collecting sources of project
 set(bpf_core_h
-    include/bpf_wrap.h
+    include/bpf_exec.h
     include/code_formater.h
     include/fast_file.h
     include/utils.h
 )
 set(bpf_core_cpp
-    src/bpf_wrap.cpp
+    src/bpf_exec.cpp
     src/code_formater.cpp
     src/fast_file.cpp
     src/utils.cpp

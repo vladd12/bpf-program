@@ -3,7 +3,7 @@
 #include <bcc/BPF.h>
 #include <code_formater.h>
 
-class BpfWrapper
+class BpfExec
 {
 private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
@@ -17,7 +17,7 @@ private:
 
 public:
     /// \brief Default c-tor.
-    explicit BpfWrapper(const std::string &programPath);
+    explicit BpfExec(const std::string &programPath);
 
     /// \brief Filtering BPF program source code.
     void filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID);

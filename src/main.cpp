@@ -1,4 +1,4 @@
-#include <bpf_wrap.h>
+#include <bpf_exec.h>
 #include <exception>
 #include <fast_file.h>
 #include <iostream>
@@ -43,8 +43,6 @@ void test(int &sock)
             auto smpCnt1 = reinterpret_cast<byte *>(iter++);
             auto smpCnt2 = reinterpret_cast<byte *>(iter++);
             curr = makeword(*smpCnt1, *smpCnt2);
-            // auto id = reinterpret_cast<byte *>(iter++);
-            // printf("Count: %04X %02X \n", curr, *id);
 
             if (!firstTime)
             {
@@ -55,7 +53,6 @@ void test(int &sock)
                 }
                 else
                 {
-                    // printf("Previous: %04X, current: %04X \n", prev, curr);
                     auto offset = curr - prev;
                     if (offset > 1)
                         throw std::runtime_error("Packet missed");
@@ -91,7 +88,7 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 
 int main()
 {
-    auto bpf = std::unique_ptr<BpfWrapper>(new BpfWrapper("bpf/ethernet-parse.c"));
+    auto bpf = std::unique_ptr<BpfExec>(new BpfExec("bpf/ethernet-parse.c"));
     auto ifaceName = std::string("enp0s8");          //
     auto srcMacAddr = std::string("0x0cefaf3042cc"); //
     auto svID = std::string("ENS80pointMU01");
