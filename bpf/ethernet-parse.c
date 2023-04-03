@@ -3,9 +3,11 @@
 #include <bcc/proto.h>
 #include <bcc/helpers.h>
 
-#define IEC_PROTO 0x8100    // 0x8100 - IEC 61850 protocol
-#define SV_PRIORITY 0b100   // SV protocol user priority
-#define SV_ETHERTYPE 0x88BA // SV message identifier
+#define IEC_PROTO 0x8100      // 0x8100 - IEC 61850 protocol
+#define SV_PRIORITY 0b100     // SV protocol user priority
+#define SV_ETHERTYPE 0x88BA   // SV message identifier
+#define SV_PDU_ID_80P 0x60    // SV PDU ID for frames with 80 data points
+#define SV_PDU_ID_256P 0x6082 // SV PDU ID for frames with 256 data points
 
 struct sv_start_t {
     u16 appid;
@@ -32,6 +34,24 @@ struct sv_savPDU_80p {
     struct sv_noASDU_80p noASDU;
 } BPF_PACKET_HEADER;
 
+struct sv_seqASDU_256p {
+    u16 seqAsduId;
+    u16 length;
+} BPF_PACKET_HEADER;
+
+struct sv_noASDU_256p {
+    u8 noSduId;
+    u8 length;
+    u8 blockNum;
+    struct sv_seqASDU_256p seqASDU;
+} BPF_PACKET_HEADER;
+
+struct sv_savPDU_256p {
+    u16 savPduId;
+    u16 length;
+    struct sv_noASDU_256p noASDU;
+} BPF_PACKET_HEADER;
+
 struct ASDU_start_t {
     u8 asduId;
     u8 length;
@@ -39,7 +59,7 @@ struct ASDU_start_t {
     u8 svIdLength;
 } BPF_PACKET_HEADER;
 
-static inline bool SV_CMP(struct __sk_buff *skb, unsigned long offset, unsigned long length) {
+static inline bool SvIdCmp(struct __sk_buff *skb, unsigned long offset, unsigned long length) {
     // NOTE: value SV_ID declared by user programm
     char cmp_str[] = "%SV_ID";
 
@@ -56,7 +76,7 @@ static inline bool SV_CMP(struct __sk_buff *skb, unsigned long offset, unsigned 
 
 /* eBPF program.
    Filter IEC 61850-9-2 SV frames, having payload not empty if the program
-   is loaded as PROG_TYPE_SOCKET_FILTER and attached to a socket.
+   is loaded as PROG_TYPE_SOCKET_FILTER and attached to the socket.
    return  0 -> DROP the frame.
    return -1 -> KEEP the frame and return it to user space (userspace can read it from the socket_fd).
 */
@@ -91,12 +111,35 @@ int iec61850_filter(struct __sk_buff *skb) {
     }
 
     struct sv_start_t *sv_start = cursor_advance(cursor, sizeof(*sv_start));
-    struct sv_savPDU_80p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
-    struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
+    unsigned long pduIdOffset = sizeof(*ethernet) + sizeof(*sv_start);
+    // Read PDU ID from skb
+    u16 pduId256 = load_half(skb, pduIdOffset);
+    u16 pduId80 = (pduId256 >> 8) & 0x00FF;
+    // bpf_trace_printk("0x%x 0x%x\n", pduId256, pduId80);
 
-    unsigned long payloadOfsset = sizeof(*ethernet) + sizeof(*sv_start) + sizeof(*savPDU) + sizeof(*asduHead);
-    const u8 len = asduHead->svIdLength;
-    bool cmp = SV_CMP(skb, payloadOfsset, len);
+    unsigned long pduSize = 0;
+    // Frame with 256 data points
+    if (pduId256 == SV_PDU_ID_256P) {
+        struct sv_savPDU_256p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
+        pduSize = sizeof(*savPDU);
+    }
+    // Frame with 80 data points
+    else if (pduId80 == SV_PDU_ID_80P) {
+        struct sv_savPDU_80p *savPDU = cursor_advance(cursor, sizeof(*savPDU));
+        pduSize = sizeof(*savPDU);
+    }
+    // Unknown data
+    else {
+        goto DROP;
+    }
+
+    // Calculating offset and getting length of sample values ID.
+    struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
+    const unsigned long svIdOfsset = pduIdOffset + pduSize + sizeof(*asduHead);
+    const u8 svIdLength = asduHead->svIdLength;
+
+    // Comparing sample values ID.
+    bool cmp = SvIdCmp(skb, svIdOfsset, svIdLength);
     if (!cmp) {
         // bpf_trace_printk("It's not Ok :(");
         goto DROP;

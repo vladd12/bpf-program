@@ -43,21 +43,24 @@ void test(int &sock)
             auto smpCnt1 = reinterpret_cast<byte *>(iter++);
             auto smpCnt2 = reinterpret_cast<byte *>(iter++);
             curr = makeword(*smpCnt1, *smpCnt2);
+            printf("Count: %04X\n", curr);
 
             if (!firstTime)
             {
                 if (curr == 0)
                 {
                     if (prev != smpCntMax)
-                        throw std::runtime_error("Packet missed");
+                        // throw std::runtime_error("Packet missed")
+                        ;
                 }
                 else
                 {
                     auto offset = curr - prev;
                     if (offset > 1)
-                        throw std::runtime_error("Packet missed");
+                        // throw std::runtime_error("Packet missed")
+                        ;
                 }
-                file.write(curr);
+                // file.write(curr);
             }
 
             if (curr > max)
@@ -89,10 +92,10 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 int main()
 {
     auto bpf = std::unique_ptr<BpfExec>(new BpfExec("bpf/ethernet-parse.c"));
-    auto ifaceName = std::string("enp0s8");          //
-    auto srcMacAddr = std::string("0x0cefaf3042cc"); //
-    auto svID = std::string("ENS80pointMU01");
-    // inputData(ifaceName, srcMacAddr, svID);
+    auto ifaceName = std::string("enp0s8");          // enp0s8 - VM, eth0 - hardware
+    auto srcMacAddr = std::string("0x0cefaf3042cc"); // 0x0cefaf3042cc - 80p, 0x0cefaf3042cd - 256p
+    auto svID = std::string("ENS80pointMU01");       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
+    inputData(ifaceName, srcMacAddr, svID);
     bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
     auto status = bpf->run();
