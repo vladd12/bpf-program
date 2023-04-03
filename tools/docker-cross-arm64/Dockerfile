@@ -63,7 +63,6 @@ WORKDIR /home/user/bpf-program/build
 RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH .. && \
     cmake --build . --config Release && \
-    chmod ugo+x bpf_test && \
     cmake --install .
 
 CMD ["/bin/sh"]
