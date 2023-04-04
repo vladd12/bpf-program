@@ -1,6 +1,7 @@
 #include <bpf_exec.h>
 #include <exception>
 #include <fast_file.h>
+#include <iec_parser.h>
 #include <iostream>
 #include <utils.h>
 
@@ -28,12 +29,17 @@ void test(int &sock)
     auto buffer = new byte[bufSize];
     auto file = FastFile("out.txt");
     printf("Start work\n");
+    iec::IecParser parser;
 
     while (true)
     {
         auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
         if (rcStat >= 0)
         {
+            parser.update(buffer, rcStat);
+            [[maybe_unused]] auto seq = parser.parse();
+            break;
+
             if (!firstTime)
                 prev = curr;
 
@@ -95,7 +101,7 @@ int main()
     auto ifaceName = std::string("enp0s8");          // enp0s8 - VM, eth0 - hardware
     auto srcMacAddr = std::string("0x0cefaf3042cc"); // 0x0cefaf3042cc - 80p, 0x0cefaf3042cd - 256p
     auto svID = std::string("ENS80pointMU01");       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
-    inputData(ifaceName, srcMacAddr, svID);
+    // inputData(ifaceName, srcMacAddr, svID);
     bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
     auto status = bpf->run();
