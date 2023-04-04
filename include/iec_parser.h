@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cassert>
 #include <cstdint>
 #include <net/ethernet.h>
@@ -44,11 +43,11 @@ constexpr inline qword makeqword(const dword lhs, const dword rhs)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-union dataFrame {
+union DataFrame {
     struct __attribute__((__packed__))
     {
-        std::uint32_t ampInstMagI;
-        std::uint16_t ampQ;
+        std::uint32_t instMagI;
+        std::uint16_t quality;
         union bitfield {
             struct __attribute__((__packed__))
             {
@@ -66,25 +65,20 @@ union dataFrame {
     std::uint64_t data_;
 };
 
+constexpr auto framesPerASDU = 8;
+
 struct ASDU
 {
     std::int16_t smpCnt;
     std::uint32_t confRev;
     std::uint8_t smpSync;
-    std::uint8_t size; // usually 0x40
-    dataFrame *data;
+    DataFrame data[framesPerASDU];
 };
 
-struct seqASDU
+struct SeqASDU
 {
     std::uint8_t count;
     ASDU *data;
-};
-
-enum ParseMode : bool
-{
-    P80 = false,
-    P256 = true
 };
 
 class IecParser
@@ -92,7 +86,7 @@ class IecParser
 private:
     byte *mData;
     std::uint16_t mSize;
-    word prevSmpCnt;
+    // word prevSmpCnt;
 
     bool applyOffset(std::uint16_t offset)
     {
@@ -108,108 +102,106 @@ private:
     byte readByte()
     {
         auto _byte = *mData;
-        mData++;
-        mSize--;
+        applyOffset(sizeof(byte));
         return _byte;
     }
 
     word readWord()
     {
         auto _word = makeword(*mData, *(mData + 1));
-        mData += sizeof(word);
-        mSize -= sizeof(word);
+        applyOffset(sizeof(word));
         return _word;
     }
 
     dword readDword()
     {
         auto _dword = makedword(makeword(*mData, *(mData + 1)), makeword(*(mData + 2), *(mData + 3)));
-        mData += sizeof(dword);
-        mSize -= sizeof(dword);
+        applyOffset(sizeof(dword));
         return _dword;
     }
 
     qword readQword()
     {
-        return makeqword(readDword(), readDword());
+        auto _dword1 = makedword(makeword(*mData, *(mData + 1)), makeword(*(mData + 2), *(mData + 3)));
+        auto _dword2 = makedword(makeword(*(mData + 4), *(mData + 5)), makeword(*(mData + 6), *(mData + 7)));
+        applyOffset(sizeof(qword));
+        return makeqword(_dword1, _dword2);
     }
 
-    bool verifySize(ParseMode mode)
+    bool verifySize(std::uint16_t size)
     {
-        if (mode == ParseMode::P80)
-        {
-            auto len = readByte();
-            return len == mSize;
-        }
-        else if (mode == ParseMode::P256)
-        {
-            auto len = readWord();
-            return len == mSize;
-        }
-        else
-        {
-            return false;
-        }
+        return size == mSize;
     }
 
-    void parse80(seqASDU &seq)
-    {
-        ;
-    }
+    //    void parse80(SeqASDU &seq)
+    //    {
+    //        ;
+    //    }
 
-    void parse256(seqASDU &seq)
-    {
-        ;
-    }
-
-    ParseMode defineParseMode()
-    {
-        auto pduId = readWord();
-        if (pduId == 0x6082)
-            return ParseMode::P256;
-        else
-            return ParseMode::P80;
-    }
+    //    void parse256(SeqASDU &seq)
+    //    {
+    //        ;
+    //    }
 
 public:
-    explicit IecParser() : mData(nullptr), mSize(0)
-    {
-    }
+    explicit IecParser();
+    explicit IecParser(byte *data, const std::uint16_t size);
+    bool update(byte *data, const std::uint16_t size);
 
-    explicit IecParser(byte *data, const std::uint16_t size) : mData(data), mSize(size)
+    int parseAsnLength()
     {
-    }
+        int LL, len = 0, ln;
 
-    bool update(byte *data, const std::uint16_t size)
-    {
-        if (data != nullptr && size > 0)
+        if (*mData & 0x80)
         {
-            mData = data;
-            mSize = size;
-            return true;
-        }
-        return false;
-    }
-
-    seqASDU parse()
-    {
-        constexpr static std::uint16_t iecHeaderSize = 8;
-        [[maybe_unused]] seqASDU seq;
-        applyOffset(sizeof(ether_header) + iecHeaderSize);
-        auto parseMode = defineParseMode();
-        if (parseMode == ParseMode::P80)
-        {
-            // Step back
-            mData--;
-            mSize++;
-            assert(verifySize(parseMode));
-            parse80(seq);
+            LL = *mData & 0x7f;
+            if (LL > 4)
+                return -2;
+            mData++;
+            ln = LL + 1;
         }
         else
         {
-            assert(verifySize(parseMode));
-            parse256(seq);
+            LL = 1;
+            ln = LL;
         }
+
+        while (LL > 0)
+        {
+            len = len + *mData;
+            LL--;
+            if (LL)
+            {
+                len = len << 8;
+                mData++;
+            }
+        }
+        return ln;
+    }
+
+    SeqASDU parse()
+    {
+        constexpr static std::uint16_t iecHeaderSize = 8;
+        SeqASDU seq;
+        applyOffset(sizeof(ether_header) + iecHeaderSize);
+        //        auto parseMode = defineParseMode();
+        //        if (parseMode == ParseMode::P80)
+        //        {
+        //            // Step back
+        //            mData--;
+        //            mSize++;
+        //            GetAsnLen();
+        //            assert(verifySize(parseMode));
+        //            parse80(seq);
+        //        }
+        //        else
+        //        {
+        //            mData--;
+        //            mSize++;
+        //            GetAsnLen();
+        //            assert(verifySize(parseMode));
+        //            parse256(seq);
+        //        }
         return seq;
     }
 };
