@@ -29,6 +29,7 @@ endif()
 # Collecting sources of project
 set(bpf_core_h
     include/bpf_exec.h
+    include/byte_op.h
     include/code_formater.h
     include/fast_file.h
     include/iec_parser.h
