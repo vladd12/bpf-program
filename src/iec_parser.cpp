@@ -24,7 +24,7 @@ bool IecParser::update(byte *data, const std::uint16_t size)
 
 bool IecParser::applyOffset(std::uint16_t offset)
 {
-    if (mSize - offset > 0)
+    if (mSize - offset >= 0)
     {
         mData += offset;
         mSize -= offset;
@@ -40,34 +40,32 @@ bool IecParser::verifySize(std::uint16_t size)
 
 byte IecParser::readByte()
 {
-    auto _byte = *mData;
-    applyOffset(sizeof(byte));
+    auto _byte = read<byte>();
     return _byte;
 }
 
 word IecParser::readWord()
 {
-    using namespace bytes;
-    auto _word = makeword(*mData, *(mData + 1));
-    applyOffset(sizeof(word));
+    auto _word = read<word>();
+    if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+        _word = bytes::byteswap(_word);
     return _word;
 }
 
 dword IecParser::readDword()
 {
-    using namespace bytes;
-    auto _dword = makedword(makeword(*mData, *(mData + 1)), makeword(*(mData + 2), *(mData + 3)));
-    applyOffset(sizeof(dword));
+    auto _dword = read<dword>();
+    if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+        _dword = bytes::byteswap(_dword);
     return _dword;
 }
 
 qword IecParser::readQword()
 {
-    using namespace bytes;
-    auto _dword1 = makedword(makeword(*mData, *(mData + 1)), makeword(*(mData + 2), *(mData + 3)));
-    auto _dword2 = makedword(makeword(*(mData + 4), *(mData + 5)), makeword(*(mData + 6), *(mData + 7)));
-    applyOffset(sizeof(qword));
-    return makeqword(_dword1, _dword2);
+    auto _qword = read<qword>();
+    if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+        _qword = bytes::byteswap(_qword);
+    return _qword;
 }
 
 }

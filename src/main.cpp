@@ -56,15 +56,13 @@ void test(int &sock)
                 if (curr == 0)
                 {
                     if (prev != smpCntMax)
-                        // throw std::runtime_error("Packet missed")
-                        ;
+                        throw std::runtime_error("Packet missed");
                 }
                 else
                 {
                     auto offset = curr - prev;
                     if (offset > 1)
-                        // throw std::runtime_error("Packet missed")
-                        ;
+                        throw std::runtime_error("Packet missed");
                 }
                 // file.write(curr);
             }

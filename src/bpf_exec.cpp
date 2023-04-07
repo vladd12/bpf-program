@@ -48,7 +48,9 @@ int BpfExec::getRawSocket(const std::string &ifaceName)
      * SIOCSIFFLAGS	0x8914 - set flags.
      */
     struct ifreq ethreq;
-    strncpy(ethreq.ifr_name, ifaceName.c_str(), IF_NAMESIZE);
+    strncpy(ethreq.ifr_name, ifaceName.c_str(), IF_NAMESIZE - 1);
+    // Stringop-truncation fix with adding a null-term last character
+    ethreq.ifr_name[IF_NAMESIZE - 1] = '\0';
     status = ioctl(sock_fd, SIOCGIFFLAGS, &ethreq);
     if (status == error)
     {

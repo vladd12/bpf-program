@@ -37,6 +37,7 @@ set(bpf_core_h
 )
 set(bpf_core_cpp
     src/bpf_exec.cpp
+    src/byte_op.cpp
     src/code_formater.cpp
     src/fast_file.cpp
     src/iec_parser.cpp
@@ -66,7 +67,8 @@ endif()
 
 # Some compilation flags
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 endif()
 
 # Installing eBPF sources in directory with program

@@ -7,47 +7,47 @@ namespace iec
 {
 struct PDUHeader
 {
-    std::uint16_t appID;
-    std::uint16_t length;
-    std::uint16_t res1;
-    std::uint16_t res2;
+    ui16 appID;
+    ui16 length;
+    ui16 res1;
+    ui16 res2;
 } __attribute__((__packed__));
 
 union DataFrame {
     struct __attribute__((__packed__))
     {
-        std::uint32_t instMagI;
-        std::uint16_t quality;
+        ui32 instMagI;
+        ui16 quality;
         union bitfield {
             struct __attribute__((__packed__))
             {
-                std::uint16_t reserved : 2;
-                std::uint16_t der : 1;
-                std::uint16_t opB : 1;
-                std::uint16_t test : 1;
-                std::uint16_t src : 1;
-                std::uint16_t dQual : 8;
-                std::uint16_t valid : 2;
+                ui16 reserved : 2;
+                ui16 der : 1;
+                ui16 opB : 1;
+                ui16 test : 1;
+                ui16 src : 1;
+                ui16 dQual : 8;
+                ui16 valid : 2;
             } data;
-            std::uint16_t data_;
+            ui16 data_;
         } bitset;
     } data;
-    std::uint64_t data_;
+    ui64 data_;
 };
 
 constexpr auto framesPerASDU = 8;
 
 struct ASDU
 {
-    std::int16_t smpCnt;
-    std::uint32_t confRev;
-    std::uint8_t smpSync;
+    ui16 smpCnt;
+    ui32 confRev;
+    ui8 smpSync;
     DataFrame data[framesPerASDU];
 };
 
 struct SeqASDU
 {
-    std::uint8_t count;
+    ui8 count;
     ASDU *data;
 };
 
@@ -67,15 +67,15 @@ private:
 
     template <typename T> T read()
     {
-        T *ptr = reinterpret_cast<T *>(mData);
+        T *val = reinterpret_cast<T *>(mData);
         applyOffset(sizeof(T));
-        return *ptr;
+        return *val;
     }
 
-    std::uint32_t parseAsnLength()
+    ui32 parseAsnLength()
     {
         auto firstByte = readByte();
-        std::uint32_t length = 0;
+        ui32 length = 0;
 
         if (firstByte & 0x80)
         {
@@ -95,6 +95,12 @@ private:
         return length;
     }
 
+    void parsePDU()
+    {
+        [[maybe_unused]] auto head = PDUHeader { readWord(), readWord(), readWord(), readWord() };
+        [[maybe_unused]] auto len = head.length;
+    }
+
 public:
     explicit IecParser();
     explicit IecParser(byte *data, const std::uint16_t size);
@@ -104,7 +110,7 @@ public:
     {
         SeqASDU seq;
         applyOffset(sizeof(ether_header));
-        [[maybe_unused]] auto head = read<PDUHeader>();
+        parsePDU();
         return seq;
     }
 };
