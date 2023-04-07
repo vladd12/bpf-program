@@ -2,6 +2,7 @@
 
 #include <byte_op.h>
 #include <cassert>
+#include <cstring>
 #include <net/ethernet.h>
 
 namespace iec
@@ -59,7 +60,7 @@ private:
     ui16 mSize;
 
     bool applyOffset(ui16 offset);
-    bool verifySize(ui16 size);
+    bool verifySize(ui16 size) const;
 
     ui8 readByte();
     ui16 readWord();
@@ -73,71 +74,10 @@ private:
         return *val;
     }
 
-    ui32 parseAsnLength()
-    {
-        auto firstByte = readByte();
-        ui32 length = 0;
-        if (firstByte & 0x80)
-        {
-            auto asnLength = firstByte & 0x7f;
-            if (asnLength > 4)
-                return 0;
-            while (asnLength > 0)
-            {
-                length += readByte();
-                asnLength--;
-                if (asnLength > 0)
-                    length = length << 8;
-            }
-            return length;
-        }
-        else
-            return firstByte;
-    }
-
-    bool parsePDU(SeqASDU &seq)
-    {
-        constexpr ui8 stdPduId = 0x60;
-        constexpr ui8 stdNoAsduId = 0x80;
-
-        auto head = PDUHeader { readWord(), readWord(), readWord(), readWord() };
-        ui32 length = head.length - sizeof(head);
-        if (!verifySize(length))
-            return false;
-        // reading savPDU
-        auto pduId = readByte();
-        if (pduId != stdPduId)
-            return false;
-        length = parseAsnLength();
-        if (!verifySize(length))
-            return false;
-
-        // reading noASDU
-        auto noAsduId = readByte();
-        if (noAsduId != stdNoAsduId)
-            return false;
-        length = readByte();
-        if (length != 1)
-            return false;
-        auto seqCount = readByte();
-        if (seqCount > 16)
-            return false;
-
-        seq.count = seqCount;
-        return true;
-    }
-
-    bool parseSequence([[maybe_unused]] SeqASDU &seq)
-    {
-        auto seqAsduId = readByte();
-        if (seqAsduId != 0xa2)
-            return false;
-        ui32 length = parseAsnLength();
-        if (!verifySize(length))
-            return false;
-
-        return true;
-    }
+    ui32 parseAsnLength();
+    bool parsePDU(SeqASDU &seq);
+    bool parseSequence(SeqASDU &seq);
+    bool parseASDU(ASDU &asdu);
 
 public:
     explicit IecParser();
@@ -146,12 +86,22 @@ public:
 
     SeqASDU parse()
     {
-        SeqASDU seq;
+        SeqASDU seq = { 0, nullptr };
         applyOffset(sizeof(ether_header));
         auto status = parsePDU(seq);
         assert(status);
-        status = parseSequence(seq);
-        assert(status);
+        if (status)
+        {
+            status = parseSequence(seq);
+            assert(status);
+        }
+
+        if (!status && seq.data)
+        {
+            delete[] seq.data;
+            seq.data = nullptr;
+        }
+
         return seq;
     }
 };

@@ -27,7 +27,7 @@ void test(int &sock)
     word min = UINT16_MAX, max = 0, prev = 0, curr = 1;
     bool firstTime = true;
     auto buffer = new byte[bufSize];
-    auto file = FastFile("out.txt");
+    [[maybe_unused]] auto file = FastFile("out.txt");
     printf("Start work\n");
     iec::IecParser parser;
 
@@ -38,7 +38,7 @@ void test(int &sock)
         {
             parser.update(buffer, rcStat);
             [[maybe_unused]] auto seq = parser.parse();
-            break;
+            delete[] seq.data;
 
             if (!firstTime)
                 prev = curr;
