@@ -1,6 +1,7 @@
 #pragma once
 
 #include <byte_op.h>
+#include <cassert>
 #include <net/ethernet.h>
 
 namespace iec
@@ -54,16 +55,16 @@ struct SeqASDU
 class IecParser
 {
 private:
-    byte *mData;
-    std::uint16_t mSize;
+    ui8 *mData;
+    ui16 mSize;
 
-    bool applyOffset(std::uint16_t offset);
-    bool verifySize(std::uint16_t size);
+    bool applyOffset(ui16 offset);
+    bool verifySize(ui16 size);
 
-    byte readByte();
-    word readWord();
-    dword readDword();
-    qword readQword();
+    ui8 readByte();
+    ui16 readWord();
+    ui32 readDword();
+    ui64 readQword();
 
     template <typename T> T read()
     {
@@ -76,7 +77,6 @@ private:
     {
         auto firstByte = readByte();
         ui32 length = 0;
-
         if (firstByte & 0x80)
         {
             auto asnLength = firstByte & 0x7f;
@@ -89,28 +89,69 @@ private:
                 if (asnLength > 0)
                     length = length << 8;
             }
+            return length;
         }
         else
-            length = firstByte;
-        return length;
+            return firstByte;
     }
 
-    void parsePDU()
+    bool parsePDU(SeqASDU &seq)
     {
-        [[maybe_unused]] auto head = PDUHeader { readWord(), readWord(), readWord(), readWord() };
-        [[maybe_unused]] auto len = head.length;
+        constexpr ui8 stdPduId = 0x60;
+        constexpr ui8 stdNoAsduId = 0x80;
+
+        auto head = PDUHeader { readWord(), readWord(), readWord(), readWord() };
+        ui32 length = head.length - sizeof(head);
+        if (!verifySize(length))
+            return false;
+        // reading savPDU
+        auto pduId = readByte();
+        if (pduId != stdPduId)
+            return false;
+        length = parseAsnLength();
+        if (!verifySize(length))
+            return false;
+
+        // reading noASDU
+        auto noAsduId = readByte();
+        if (noAsduId != stdNoAsduId)
+            return false;
+        length = readByte();
+        if (length != 1)
+            return false;
+        auto seqCount = readByte();
+        if (seqCount > 16)
+            return false;
+
+        seq.count = seqCount;
+        return true;
+    }
+
+    bool parseSequence([[maybe_unused]] SeqASDU &seq)
+    {
+        auto seqAsduId = readByte();
+        if (seqAsduId != 0xa2)
+            return false;
+        ui32 length = parseAsnLength();
+        if (!verifySize(length))
+            return false;
+
+        return true;
     }
 
 public:
     explicit IecParser();
-    explicit IecParser(byte *data, const std::uint16_t size);
-    bool update(byte *data, const std::uint16_t size);
+    explicit IecParser(ui8 *data, const ui16 size);
+    bool update(ui8 *data, const ui16 size);
 
     SeqASDU parse()
     {
         SeqASDU seq;
         applyOffset(sizeof(ether_header));
-        parsePDU();
+        auto status = parsePDU(seq);
+        assert(status);
+        status = parseSequence(seq);
+        assert(status);
         return seq;
     }
 };

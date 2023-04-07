@@ -7,11 +7,11 @@ IecParser::IecParser() : mData(nullptr), mSize(0)
 {
 }
 
-IecParser::IecParser(byte *data, const std::uint16_t size) : mData(data), mSize(size)
+IecParser::IecParser(ui8 *data, const ui16 size) : mData(data), mSize(size)
 {
 }
 
-bool IecParser::update(byte *data, const std::uint16_t size)
+bool IecParser::update(ui8 *data, const ui16 size)
 {
     if (data != nullptr && size > 0)
     {
@@ -22,7 +22,7 @@ bool IecParser::update(byte *data, const std::uint16_t size)
     return false;
 }
 
-bool IecParser::applyOffset(std::uint16_t offset)
+bool IecParser::applyOffset(ui16 offset)
 {
     if (mSize - offset >= 0)
     {
@@ -33,36 +33,36 @@ bool IecParser::applyOffset(std::uint16_t offset)
     return false;
 }
 
-bool IecParser::verifySize(std::uint16_t size)
+bool IecParser::verifySize(ui16 size)
 {
     return size == mSize;
 }
 
-byte IecParser::readByte()
+ui8 IecParser::readByte()
 {
-    auto _byte = read<byte>();
+    auto _byte = read<ui8>();
     return _byte;
 }
 
-word IecParser::readWord()
+ui16 IecParser::readWord()
 {
-    auto _word = read<word>();
+    auto _word = read<ui16>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _word = bytes::byteswap(_word);
     return _word;
 }
 
-dword IecParser::readDword()
+ui32 IecParser::readDword()
 {
-    auto _dword = read<dword>();
+    auto _dword = read<ui32>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _dword = bytes::byteswap(_dword);
     return _dword;
 }
 
-qword IecParser::readQword()
+ui64 IecParser::readQword()
 {
-    auto _qword = read<qword>();
+    auto _qword = read<ui64>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _qword = bytes::byteswap(_qword);
     return _qword;
