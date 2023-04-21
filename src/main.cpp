@@ -100,7 +100,7 @@ int main()
     auto ifaceName = std::string("enp0s8");          // enp0s8 - VM, eth0 - hardware
     auto srcMacAddr = std::string("0x0cefaf3042cc"); // 0x0cefaf3042cc - 80p, 0x0cefaf3042cd - 256p
     auto svID = std::string("ENS80pointMU01");       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
-    // inputData(ifaceName, srcMacAddr, svID);
+    inputData(ifaceName, srcMacAddr, svID);
     bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
     auto status = bpf->run();
