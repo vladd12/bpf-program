@@ -214,4 +214,24 @@ bool IecParser::parseASDU(ASDU &asdu)
     return true;
 }
 
+SeqASDU IecParser::parse()
+{
+    SeqASDU seq = { 0, nullptr };
+    applyOffset(sizeof(ether_header));
+    auto status = parsePDU(seq);
+    assert(status);
+    if (status)
+    {
+        status = parseSequence(seq);
+        assert(status);
+    }
+
+    if (!status && seq.data)
+    {
+        delete[] seq.data;
+        seq.data = nullptr;
+    }
+    return seq;
+}
+
 }

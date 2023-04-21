@@ -38,7 +38,8 @@ void test(int &sock)
         {
             parser.update(buffer, rcStat);
             [[maybe_unused]] auto seq = parser.parse();
-            delete[] seq.data;
+            if (seq.data)
+                delete[] seq.data;
 
             if (!firstTime)
                 prev = curr;

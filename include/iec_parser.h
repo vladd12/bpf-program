@@ -83,27 +83,7 @@ public:
     explicit IecParser();
     explicit IecParser(ui8 *data, const ui16 size);
     bool update(ui8 *data, const ui16 size);
-
-    SeqASDU parse()
-    {
-        SeqASDU seq = { 0, nullptr };
-        applyOffset(sizeof(ether_header));
-        auto status = parsePDU(seq);
-        assert(status);
-        if (status)
-        {
-            status = parseSequence(seq);
-            assert(status);
-        }
-
-        if (!status && seq.data)
-        {
-            delete[] seq.data;
-            seq.data = nullptr;
-        }
-
-        return seq;
-    }
+    SeqASDU parse();
 };
 
 }

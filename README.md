@@ -1,21 +1,28 @@
 # BPF testing project
 
-## Installations for build
+## Installing compile instruments
 ```
-apt search linux-headers-$(uname -r)
-sudo apt-get install linux-headers-$(your_kernel)
-sudo apt-get install libbpfcc-dev
+sudo apt install -y --no-install-recommends git cmake ninja-build gcc build-essential
 ```
 
-## Building on machine
+## Installing dependencies
 ```
+apt search linux-headers-$(uname -r)
+sudo apt install linux-headers-$(your_kernel)
+sudo apt install libbpfcc-dev
+```
+
+## Building on local machine
+```
+mkdir build && cd build
+cmake -G Ninja ..
+cmake --build . && cmake --install .
 ```
 
 ## Building with Docker
-### x86
-```
-```
 ### arm64
 ```
+mkdir build && cd build
+docker build --file "Dockerfile" --platform linux/amd64 -t bpf-arm64 --no-cache ../tools/docker-cross-arm64
+docker run --platform=linux/amd64 -i -t bpf-arm64
 ```
-
