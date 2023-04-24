@@ -9,15 +9,15 @@ private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
     SourceCodeFormater bpfProg;
 
-    /// \brief Getting a raw socket and binding it to interface, specified by ifaceName.
-    int getRawSocket(const std::string &ifaceName);
-
     /// \brief Attaching raw socket for listening ethernet interface, specified by ifaceName.
     ebpf::StatusTuple attachRawSocket(const std::string &ifaceName, const int function, int &socket);
 
 public:
     /// \brief Default c-tor.
     explicit BpfExec(const std::string &programPath);
+
+    /// \brief Getting a raw socket and binding it to interface, specified by ifaceName.
+    static int getRawSocket(const std::string &ifaceName);
 
     /// \brief Filtering BPF program source code.
     void filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID);

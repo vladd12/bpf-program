@@ -88,12 +88,12 @@ void BpfExec::filterSourceCode(const std::string &ifaceName, const std::string &
     }
 
     /// TODO: replace it
-    std::cout << "code:\n\n" << bpfProg.getSourceCode() << "\n\n";
+    // std::cout << "code:\n\n" << bpfProg.getSourceCode() << "\n\n";
 }
 
 ebpf::StatusTuple BpfExec::run()
 {
-    return bpfPtr->init(bpfProg.getSourceCode());
+    return bpfPtr->init(bpfProg.getSourceCode(), { "-Wno-macro-redefined" });
 }
 
 ebpf::StatusTuple BpfExec::attachRawSocket(const std::string &ifaceName, const int function, int &socket)

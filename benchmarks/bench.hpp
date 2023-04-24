@@ -17,7 +17,13 @@ void BM_StringCompare(benchmark::State &state);
 
 namespace bm_bpf
 {
+void createRawSocket(const benchmark::State &state);
+bool nativeFilter(std::uint8_t *data, std::size_t size);
+void createBpfSocket(const benchmark::State &state);
+void closeSocket(const benchmark::State &state);
 
+void BM_bpf(benchmark::State &state);
+void BM_native(benchmark::State &state);
 }
 
 /// \brief Standard operations benchmarks.

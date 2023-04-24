@@ -15,12 +15,29 @@ struct PDUHeader
     ui16 res2;
 } __attribute__((__packed__));
 
+union DetailQual {
+    ui8 _data;
+    struct __attribute__((__packed__))
+    {
+        ui8 overflow : 1;
+        ui8 outOfRange : 1;
+        ui8 badReference : 1;
+        ui8 oscillatory : 1;
+        ui8 failure : 1;
+        ui8 oldData : 1;
+        ui8 inconsistent : 1;
+        ui8 inaccurate : 1;
+    } data;
+};
+
 union DataFrame {
+    ui64 _data;
     struct __attribute__((__packed__))
     {
         ui32 instMagI;
         ui16 quality;
         union bitfield {
+            ui16 _data;
             struct __attribute__((__packed__))
             {
                 ui16 reserved : 2;
@@ -31,10 +48,13 @@ union DataFrame {
                 ui16 dQual : 8;
                 ui16 valid : 2;
             } data;
-            ui16 data_;
         } bitset;
     } data;
-    ui64 data_;
+
+    auto getQuality() const
+    {
+        return DetailQual { ui8(data.bitset.data.dQual) };
+    }
 };
 
 constexpr auto framesPerASDU = 8;
