@@ -2,7 +2,10 @@
 
 #include <cstring>
 
-void bm_mem::BM_memcpy(benchmark::State &state)
+namespace bm_mem
+{
+
+void BM_memcpy(benchmark::State &state)
 {
     char *src = new char[state.range(0)];
     char *dst = new char[state.range(0)];
@@ -13,9 +16,9 @@ void bm_mem::BM_memcpy(benchmark::State &state)
     delete[] src;
     delete[] dst;
 }
-BENCHMARK(bm_mem::BM_memcpy)->RangeMultiplier(2)->Range(8, 8 << 10);
+BENCHMARK(BM_memcpy)->RangeMultiplier(2)->Range(8, 8 << 10);
 
-void bm_mem::BM_malloc(benchmark::State &state)
+void BM_malloc(benchmark::State &state)
 {
     for ([[maybe_unused]] auto _ : state)
     {
@@ -24,15 +27,17 @@ void bm_mem::BM_malloc(benchmark::State &state)
     }
     state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)));
 }
-BENCHMARK(bm_mem::BM_malloc)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(BM_malloc)->RangeMultiplier(2)->Range(32, 4096);
 
-void bm_mem::BM_new(benchmark::State &state)
+void BM_new(benchmark::State &state)
 {
-    for ([[maybe_unused]] auto _ : state)
+    while (state.KeepRunning())
     {
         auto data = new std::uint8_t[state.range(0)];
         delete[] data;
     }
     state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(state.range(0)));
 }
-BENCHMARK(bm_mem::BM_new)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(BM_new)->RangeMultiplier(2)->Range(32, 4096);
+
+}

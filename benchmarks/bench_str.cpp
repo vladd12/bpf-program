@@ -2,22 +2,25 @@
 
 #include <string>
 
-void bm_str::BM_StringCreation(benchmark::State &state)
+namespace bm_str
+{
+
+void BM_StringCreation(benchmark::State &state)
 {
     for ([[maybe_unused]] auto _ : state)
         std::string empty_string;
 }
-BENCHMARK(bm_str::BM_StringCreation);
+BENCHMARK(BM_StringCreation);
 
-void bm_str::BM_StringCopy(benchmark::State &state)
+void BM_StringCopy(benchmark::State &state)
 {
     std::string x = "hello";
     for ([[maybe_unused]] auto _ : state)
         std::string copy(x);
 }
-BENCHMARK(bm_str::BM_StringCopy);
+BENCHMARK(BM_StringCopy);
 
-void bm_str::BM_StringCompare(benchmark::State &state)
+void BM_StringCompare(benchmark::State &state)
 {
     std::string s1(state.range(0), '-');
     std::string s2(state.range(0), '-');
@@ -29,3 +32,5 @@ void bm_str::BM_StringCompare(benchmark::State &state)
     state.SetComplexityN(state.range(0));
 }
 BENCHMARK(bm_str::BM_StringCompare)->RangeMultiplier(2)->Range(1 << 10, 1 << 18)->Complexity(benchmark::oN);
+
+}
