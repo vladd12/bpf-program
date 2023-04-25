@@ -54,21 +54,22 @@ add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
 # Linking libraries
 target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES})
 target_include_directories(bpf_core PUBLIC ${LIBBCC_INCLUDE_DIR})
+# Compilation flags
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
+    target_compile_options(bpf_core PUBLIC -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)
+endif()
 
 # Compilation application
 add_executable(${PROJECT_NAME} ${bpf_app_cpp})
 target_link_libraries(${PROJECT_NAME} PUBLIC bpf_core)
+# Compilation flags
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
+    target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)
+endif()
 
 # Building benchmarks with project
 if (BUILD_BENCHMARKS)
-    include(get_gbench)
     add_subdirectory(benchmarks)
-endif()
-
-# Some compilation flags
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 endif()
 
 # Installing eBPF sources in directory with program

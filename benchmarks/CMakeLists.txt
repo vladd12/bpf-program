@@ -1,4 +1,6 @@
-project(bpf_bechmarks LANGUAGES CXX)
+project(bpf_benchmarks LANGUAGES CXX)
+
+include(get_gbench)
 
 set(bench_sources
     bench.hpp
@@ -9,15 +11,9 @@ set(bench_sources
     main.cpp
 )
 
-# Extra compilation flags
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC")
-endif()
-
-# Setting project build type, if not specified
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-endif()
-
 add_executable(${PROJECT_NAME} ${bench_sources})
 target_link_libraries(${PROJECT_NAME} benchmark::benchmark_main bpf_core)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
+    target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)
+endif()
