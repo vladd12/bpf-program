@@ -3,10 +3,12 @@
 #include <fast_file.h>
 #include <iec_parser.h>
 #include <iostream>
+#include <thread>
 #include <utils.h>
 
 // Linux
 #include <net/ethernet.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 
 using byte = std::uint8_t;
@@ -18,7 +20,7 @@ constexpr inline word makeword(const byte &lhs, const byte &rhs)
     return (lhs << 8 | rhs);
 }
 
-void test(int &sock)
+void test(int sock)
 {
     constexpr std::size_t bufSize = 2048;
     constexpr std::size_t smpCnt80pOffset = 35;
@@ -31,51 +33,70 @@ void test(int &sock)
     printf("Start work\n");
     iec::IecParser parser;
 
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+
     while (true)
     {
-        auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
-        if (rcStat >= 0)
+        fd_set fd_in;
+        FD_ZERO(&fd_in);
+        FD_SET(sock, &fd_in);
+
+        auto ret = select(FD_SETSIZE + 1, &fd_in, nullptr, nullptr, &tv);
+        if (ret == -1)
         {
-            parser.update(buffer, rcStat);
-            [[maybe_unused]] auto seq = parser.parse();
-            if (seq.data)
-                delete[] seq.data;
-
-            if (!firstTime)
-                prev = curr;
-
-            auto iter = buffer;
-            iter += sizeof(ether_header);
-            iter += smpCnt80pOffset;
-            auto smpCnt1 = reinterpret_cast<byte *>(iter++);
-            auto smpCnt2 = reinterpret_cast<byte *>(iter++);
-            curr = makeword(*smpCnt1, *smpCnt2);
-            printf("Count: %04X\n", curr);
-
-            if (!firstTime)
+            // error
+            fprintf(stderr, "Error checking socket aviability");
+            break;
+        }
+        else if (ret == 0)
+        {
+            // timeout
+            std::this_thread::yield();
+        }
+        else
+        {
+            // ok
+            auto rcStat = recvfrom(sock, buffer, bufSize, 0, nullptr, nullptr);
+            if (rcStat >= 0)
             {
-                if (curr == 0)
-                {
-                    if (prev != smpCntMax)
-                        throw std::runtime_error("Packet missed");
-                }
-                else
-                {
-                    auto offset = curr - prev;
-                    if (offset > 1)
-                        throw std::runtime_error("Packet missed");
-                }
-                // file.write(curr);
-            }
+                parser.update(buffer, rcStat);
+                auto seq = parser.parse();
+                if (seq.data)
+                    delete[] seq.data;
+                if (!firstTime)
+                    prev = curr;
 
-            if (curr > max)
-                max = curr;
-            if (curr < min)
-                min = curr;
-            if (firstTime)
-                firstTime = false;
-            // if (max > curr && min < curr)
-            //    break;
+                auto iter = buffer;
+                iter += sizeof(ether_header);
+                iter += smpCnt80pOffset;
+                auto smpCnt1 = reinterpret_cast<byte *>(iter++);
+                auto smpCnt2 = reinterpret_cast<byte *>(iter++);
+                curr = makeword(*smpCnt1, *smpCnt2);
+                printf("Count: %04X\n", curr);
+
+                if (!firstTime)
+                {
+                    if (curr == 0)
+                    {
+                        if (prev != smpCntMax)
+                            throw std::runtime_error("Packet missed");
+                    }
+                    else
+                    {
+                        auto offset = curr - prev;
+                        if (offset > 1)
+                            throw std::runtime_error("Packet missed");
+                    }
+                }
+                if (curr > max)
+                    max = curr;
+                if (curr < min)
+                    min = curr;
+                if (firstTime)
+                    firstTime = false;
+            }
         }
     }
     delete[] buffer;

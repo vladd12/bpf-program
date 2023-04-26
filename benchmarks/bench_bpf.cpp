@@ -3,7 +3,9 @@
 #include <bpf_exec.h>
 #include <iostream>
 #include <net/ethernet.h>
+#include <sys/select.h>
 #include <sys/socket.h>
+#include <thread>
 
 #define DEVICE 0
 #define EMULATE 1
@@ -117,13 +119,38 @@ void BM_bpf(benchmark::State &state)
     auto counter = 0;
     constexpr std::size_t bufSize = 2048;
     auto buffer = new std::uint8_t[bufSize];
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+
     for ([[maybe_unused]] auto _ : state)
     {
         while (counter != state.range(0))
         {
-            [[maybe_unused]] auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
-            if (receiveSize >= 0)
-                counter++;
+            fd_set fd_in;
+            FD_ZERO(&fd_in);
+            FD_SET(socket, &fd_in);
+
+            auto ret = select(FD_SETSIZE + 1, &fd_in, nullptr, nullptr, &tv);
+            if (ret == -1)
+            {
+                // error
+                fprintf(stderr, "Error checking socket aviability");
+                delete[] buffer;
+                return;
+            }
+            else if (ret == 0)
+            {
+                // timeout
+                std::this_thread::yield();
+            }
+            else
+            {
+                // ok
+                auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
+                if (receiveSize >= 0)
+                    counter++;
+            }
         }
         counter = 0;
     }
@@ -136,13 +163,39 @@ void BM_native(benchmark::State &state)
     auto counter = 0;
     constexpr std::size_t bufSize = 2048;
     auto buffer = new std::uint8_t[bufSize];
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+
     for ([[maybe_unused]] auto _ : state)
     {
         while (counter != state.range(0))
         {
-            auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
-            if (nativeFilter(buffer, receiveSize))
-                counter++;
+
+            fd_set fd_in;
+            FD_ZERO(&fd_in);
+            FD_SET(socket, &fd_in);
+
+            auto ret = select(FD_SETSIZE + 1, &fd_in, nullptr, nullptr, &tv);
+            if (ret == -1)
+            {
+                // error
+                fprintf(stderr, "Error checking socket aviability");
+                delete[] buffer;
+                return;
+            }
+            else if (ret == 0)
+            {
+                // timeout
+                std::this_thread::yield();
+            }
+            else
+            {
+                // ok
+                auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
+                if (nativeFilter(buffer, receiveSize))
+                    counter++;
+            }
         }
         counter = 0;
     }
