@@ -18,6 +18,11 @@ BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfPro
 {
 }
 
+ebpf::StatusTuple BpfExec::foo()
+{
+    return bpfPtr->attach_tracepoint("net:net_dev_start_xmit", "tracepoint__net__net_dev_start_xmit");
+}
+
 int BpfExec::getRawSocket(const std::string &ifaceName)
 {
     constexpr int error = -1;

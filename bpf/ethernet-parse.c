@@ -9,6 +9,8 @@
 #define SV_PDU_ID_80P 0x60    // SV PDU ID for frames with 80 data points
 #define SV_PDU_ID_256P 0x6082 // SV PDU ID for frames with 256 data points
 
+BPF_RINGBUF_OUTPUT(buffer, 32);
+
 struct sv_start_t {
     u16 appid;
     u16 length;
@@ -59,15 +61,18 @@ struct ASDU_start_t {
     u8 svIdLength;
 } BPF_PACKET_HEADER;
 
-static inline bool SvIdCmp(struct __sk_buff *skb, unsigned long offset, unsigned long length) {
+// String comparing in BPF program
+static inline bool SvIdCmp(void* data, unsigned long length) {
     // NOTE: value SV_ID declared by user programm
     char cmp_str[] = "%SV_ID";
 
     if ((sizeof(cmp_str) - 1) != length)
         return false;
     
+    char byte = 0;
     for (unsigned long i = 0; i < sizeof(cmp_str) - 1; ++i) {
-        if (load_byte(skb, offset + i) != cmp_str[i]) {
+        byte = *((char*)(data + i));
+        if (byte  != cmp_str[i]) {
             return false;
         }
     }
@@ -80,8 +85,9 @@ static inline bool SvIdCmp(struct __sk_buff *skb, unsigned long offset, unsigned
    return  0 -> DROP the frame.
    return -1 -> KEEP the frame and return it to user space (userspace can read it from the socket_fd).
 */
-int iec61850_filter(struct __sk_buff *skb) {
+static bool iec61850_filter(struct sk_buff *skb) {
     u8 *cursor = 0;
+    void *p = (void *)(long)skb->data;
 
     // Source MAC address from capturing ethernet frame
     struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
@@ -115,7 +121,7 @@ int iec61850_filter(struct __sk_buff *skb) {
     // Read PDU ID from skb
     u16 pduId256 = load_half(skb, pduIdOffset);
     u16 pduId80 = (pduId256 >> 8) & 0x00FF;
-    // bpf_trace_printk("0x%x 0x%x\n", pduId256, pduId80);
+    bpf_trace_printk("0x%x 0x%x\n", pduId256, pduId80);
 
     unsigned long pduSize = 0;
     // Frame with 256 data points
@@ -136,10 +142,11 @@ int iec61850_filter(struct __sk_buff *skb) {
     // Calculating offset and getting length of sample values ID.
     struct ASDU_start_t *asduHead = cursor_advance(cursor, sizeof(*asduHead));
     const unsigned long svIdOfsset = pduIdOffset + pduSize + sizeof(*asduHead);
+    void* start = ((void *)(long)skb->data) + svIdOfsset;
     const u8 svIdLength = asduHead->svIdLength;
 
     // Comparing sample values ID.
-    bool cmp = SvIdCmp(skb, svIdOfsset, svIdLength);
+    bool cmp = SvIdCmp(start, svIdLength);
     if (!cmp) {
         // bpf_trace_printk("It's not Ok :(");
         goto DROP;
@@ -149,10 +156,21 @@ int iec61850_filter(struct __sk_buff *skb) {
 
     // keep the packet and send it to userspace: returning -1
     KEEP:
-        return -1;
+        return 1;
 
     // drop the packet: returning 0
     DROP:
         return 0;
 }
+
+TRACEPOINT_PROBE(net, net_dev_start_xmit){
+    struct sk_buff skb;
+    bpf_probe_read(&skb, sizeof(skb), args->skbaddr);
+    if (iec61850_filter(&skb)) {
+        ;
+    }
+    return 0;
+}
+
+
 

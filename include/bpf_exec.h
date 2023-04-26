@@ -31,4 +31,6 @@ public:
     /// \param ifaceName [in] - name of the network interface, using for creating the device socket.
     /// \return Status of creating and attaching the raw socket to the associated function.
     ebpf::StatusTuple getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName);
+
+    ebpf::StatusTuple foo();
 };
