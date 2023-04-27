@@ -34,7 +34,8 @@ set(bpf_core_h
     include/fast_file.h
     include/iec_parser.h
     include/utils.h
-    include/netdriver.h
+    include/net/sock.h
+    include/net/netdriver.h
 )
 set(bpf_core_cpp
     src/bpf_exec.cpp
@@ -43,7 +44,8 @@ set(bpf_core_cpp
     src/fast_file.cpp
     src/iec_parser.cpp
     src/utils.cpp
-    src/netdriver.cpp
+    src/net/sock.cpp
+    src/net/netdriver.cpp
 )
 set(bpf_app_cpp src/main.cpp)
 

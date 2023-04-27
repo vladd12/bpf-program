@@ -9,6 +9,16 @@
 namespace util
 {
 
+constexpr auto BUFFER_SIZE = 2048; ///< Default buffer size
+
+/// \brief Structure for storage a data buffer.
+struct Buffer
+{
+    std::uint8_t *data;
+    std::size_t allocSize;
+    std::size_t readSize;
+};
+
 /// \brief Reading the file specified by the file stream to the string.
 std::string read_file(std::ifstream &stream);
 
