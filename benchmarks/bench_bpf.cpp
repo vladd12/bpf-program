@@ -127,6 +127,7 @@ void BM_bpf(benchmark::State &state)
     {
         while (counter != state.range(0))
         {
+            state.PauseTiming();
             fd_set fd_in;
             FD_ZERO(&fd_in);
             FD_SET(socket, &fd_in);
@@ -136,8 +137,7 @@ void BM_bpf(benchmark::State &state)
             {
                 // error
                 fprintf(stderr, "Error checking socket aviability");
-                delete[] buffer;
-                return;
+                break;
             }
             else if (ret == 0)
             {
@@ -147,16 +147,25 @@ void BM_bpf(benchmark::State &state)
             else
             {
                 // ok
+                state.ResumeTiming();
                 auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
                 if (receiveSize >= 0)
                     counter++;
+                state.PauseTiming();
             }
+            state.ResumeTiming();
         }
         counter = 0;
     }
     delete[] buffer;
 }
-BENCHMARK(BM_bpf)->RangeMultiplier(2)->Range(32, 1024)->Iterations(10)->Threads(1)->Setup(createBpfSocket)->Teardown(closeSocket);
+BENCHMARK(BM_bpf)
+    ->RangeMultiplier(2)
+    ->Range(32, 1024)
+    ->Iterations(100)
+    ->Threads(1)
+    ->Setup(createBpfSocket)
+    ->Teardown(closeSocket);
 
 void BM_native(benchmark::State &state)
 {
@@ -171,7 +180,7 @@ void BM_native(benchmark::State &state)
     {
         while (counter != state.range(0))
         {
-
+            state.PauseTiming();
             fd_set fd_in;
             FD_ZERO(&fd_in);
             FD_SET(socket, &fd_in);
@@ -181,8 +190,7 @@ void BM_native(benchmark::State &state)
             {
                 // error
                 fprintf(stderr, "Error checking socket aviability");
-                delete[] buffer;
-                return;
+                break;
             }
             else if (ret == 0)
             {
@@ -192,10 +200,13 @@ void BM_native(benchmark::State &state)
             else
             {
                 // ok
+                state.ResumeTiming();
                 auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
                 if (nativeFilter(buffer, receiveSize))
                     counter++;
+                state.PauseTiming();
             }
+            state.ResumeTiming();
         }
         counter = 0;
     }
@@ -204,7 +215,7 @@ void BM_native(benchmark::State &state)
 BENCHMARK(BM_native)
     ->RangeMultiplier(2)
     ->Range(32, 1024)
-    ->Iterations(10)
+    ->Iterations(100)
     ->Threads(1)
     ->Setup(createRawSocket)
     ->Teardown(closeSocket);
