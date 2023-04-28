@@ -36,6 +36,7 @@ set(bpf_core_h
     include/utils.h
     include/net/sock.h
     include/net/netdriver.h
+    include/net/validator.h
 )
 set(bpf_core_cpp
     src/bpf_exec.cpp
@@ -46,6 +47,7 @@ set(bpf_core_cpp
     src/utils.cpp
     src/net/sock.cpp
     src/net/netdriver.cpp
+    src/net/validator.cpp
 )
 set(bpf_app_cpp src/main.cpp)
 
