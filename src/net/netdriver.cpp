@@ -1,6 +1,6 @@
 #include <net/netdriver.h>
 
-namespace Net
+namespace net
 {
 
 }

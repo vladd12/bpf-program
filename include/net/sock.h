@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <utils.h>
 
-namespace Net
+namespace net
 {
 
 class Socket

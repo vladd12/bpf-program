@@ -5,7 +5,7 @@
 #include <net/ethernet.h>
 #include <unistd.h>
 
-namespace Net
+namespace net
 {
 
 Socket::Socket(int fd) : sock_fd(fd), time { 0, 1 }

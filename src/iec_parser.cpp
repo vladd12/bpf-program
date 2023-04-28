@@ -195,7 +195,7 @@ bool IecParser::parseASDU(ASDU &asdu)
     if (smpSyncLen != 1)
         return false;
     auto smpSync = readByte();
-    asdu.smpSync = smpSync;
+    asdu.smpSynch = smpSync;
     asduLength = asduLength - (sizeof(smpSyncId) + sizeof(smpSyncLen) + sizeof(smpSync));
 
     // reading sequence of data
@@ -203,7 +203,7 @@ bool IecParser::parseASDU(ASDU &asdu)
     if (datasetId != 0x87)
         return false;
     auto datasetLen = readByte();
-    constexpr auto assumeLen = sizeof(DataFrame) * framesPerASDU;
+    constexpr auto assumeLen = sizeof(DataUnit) * unitsPerASDU;
     if (datasetLen != assumeLen)
         return false;
     memcpy(&asdu.data[0], mData, assumeLen);
