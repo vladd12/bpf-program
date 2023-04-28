@@ -46,6 +46,10 @@ public:
             {
                 auto sequence = parser.parse();
                 validator.update(sequence);
+
+                auto curr = sequence.data[0].smpCnt;
+                printf("Count: %04X\n", curr);
+
                 if (sequence.data != nullptr)
                     delete[] sequence.data;
             }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iec_parser.h>
-#include <stdexcept>
 
 namespace net
 {
@@ -31,7 +30,7 @@ private:
     /// greater than the specified difference, then the validator state changes to incorrect.
     /// Otherwise, the validator state changes to correct. Checking are performed taking
     /// into consideration the boundary values.
-    void update(const ui16 newValue, const ui8 diff) noexcept;
+    void update(const ui16 newValue, const ui8 diff);
 
     /// \brief Checking the validator state.
     /// \details If the validator state is incorrect an exception will be thrown.

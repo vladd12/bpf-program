@@ -54,7 +54,10 @@ void Socket::nonBlockRead(util::Buffer &buf)
     while (true)
     {
         if (isAvailable())
+        {
             buf.readSize = recvfrom(sock_fd, buf.data, buf.allocSize, 0, nullptr, nullptr);
+            break;
+        }
         else
             std::this_thread::yield();
     }

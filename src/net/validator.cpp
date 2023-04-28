@@ -1,4 +1,5 @@
 #include <net/validator.h>
+#include <stdexcept>
 
 namespace net
 {
@@ -7,7 +8,7 @@ Validator::Validator() : value(0), state(State::Initial)
 {
 }
 
-void Validator::update(const ui16 newValue, const ui8 diff) noexcept
+void Validator::update(const ui16 newValue, const ui8 diff)
 {
     if (state == State::Initial)
     {
@@ -51,9 +52,7 @@ void Validator::update(const iec::SeqASDU &sequnce)
         validate();
     }
     else
-    {
         throw std::runtime_error("Incorrect sequence of ASDU received");
-    }
 }
 
 }

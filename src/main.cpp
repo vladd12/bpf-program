@@ -3,6 +3,7 @@
 #include <fast_file.h>
 #include <iec_parser.h>
 #include <iostream>
+#include <net/netdriver.h>
 #include <thread>
 #include <utils.h>
 
@@ -131,7 +132,9 @@ int main()
         status = bpf->getDeviceSocket(sock, "iec61850_filter", ifaceName);
         if (status.ok() && sock >= 0)
         {
-            test(sock);
+            // test(sock);
+            auto driver = std::unique_ptr<net::NetDriver>(new net::NetDriver(net::Socket(sock), "out.txt"));
+            driver->run();
         }
     }
     util::printStatusMessage(status);
