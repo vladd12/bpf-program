@@ -13,4 +13,5 @@ docker ps
 cd C:/Temp/files
 docker cp <ID>:/home/user/bpf-program/build/bpf_app bpf_app
 docker cp <ID>:/home/user/bpf-program/build/bpf .
-docker cp <ID>:/home/user/bpf-program/build/benchmarks/bpf_bechmarks bpf_bechmarks
+docker cp <ID>:/home/user/bpf-program/build/benchmarks/common_benchmark/common_benchmark common_benchmark
+docker cp <ID>:/home/user/bpf-program/build/benchmarks/miss_benchmark/miss_benchmark miss_benchmark
