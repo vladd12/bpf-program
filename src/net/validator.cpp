@@ -52,4 +52,11 @@ void Validator::update(const iec::SeqASDU &sequnce)
         throw std::runtime_error("Incorrect sequence of ASDU received");
 }
 
+void Validator::reset() noexcept
+{
+    state = State::Initial;
+    missedCount = 0;
+    capturedCount = 0;
+}
+
 }

@@ -32,8 +32,6 @@ private:
     ui16 value;
     State state;
     Strategy strategy;
-    ui32 missedCount;
-    ui64 capturedCount;
 
     /// \brief Updating the validator state by checking the stored value and misses.
     /// \details If the difference between the previous value and the new value is
@@ -43,6 +41,9 @@ private:
     void validate(const ui16 newValue, const ui8 diff);
 
 public:
+    ui32 missedCount;
+    ui64 capturedCount;
+
     explicit Validator();
 
     /// Setter for a validator strategy.
@@ -50,6 +51,9 @@ public:
 
     /// \brief Updating validator state by the sequnce of ASDU given by IecParser.
     void update(const iec::SeqASDU &sequnce);
+
+    /// \brief Reset a validator's state and packet counters.
+    void reset() noexcept;
 };
 
 }

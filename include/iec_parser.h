@@ -1,9 +1,6 @@
 #pragma once
 
 #include <byte_op.h>
-#include <cassert>
-#include <cstring>
-#include <net/ethernet.h>
 
 /**
   Struct of IEC-61850-9-2 Sample Values Light Edition frame format

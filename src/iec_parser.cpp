@@ -1,4 +1,7 @@
+#include <cassert>
+#include <cstring>
 #include <iec_parser.h>
+#include <net/ethernet.h>
 
 namespace iec
 {

@@ -1,6 +1,8 @@
 project(miss_benchmark LANGUAGES CXX)
 
 set(miss_benchmark_sources
+    packet_counter.h
+    packet_counter.cpp
     main.cpp
 )
 
