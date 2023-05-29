@@ -14,8 +14,16 @@ private:
     timeval time;
 
 public:
-    explicit Socket() = delete;
+    explicit Socket();
     explicit Socket(int fd);
+
+    /// \brief Set a new socket handle.
+    /// \see getHandle
+    void setHandle(int fd);
+
+    /// \brief Returns a current socket handle.
+    /// \see setHandle
+    int getHandle();
 
     /// \brief Set a timeout interval to wait until the socket receives input data.
     /// \see isAvailable.

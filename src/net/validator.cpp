@@ -4,42 +4,40 @@
 namespace net
 {
 
-Validator::Validator() : value(0), state(State::Initial)
+Validator::Validator() : value(0), state(State::Initial), strategy(Strategy::ThrowException), missedCount(0), capturedCount(0)
 {
 }
 
-void Validator::update(const ui16 newValue, const ui8 diff)
+void Validator::validate(const ui16 newValue, const ui8 diff)
 {
     if (state == State::Initial)
-    {
-        value = newValue;
         state = State::Correct;
-    }
     else
     {
         auto max = (diff == 1) ? max80p : max256p;
         if (newValue == min && value == max)
-        {
-            value = newValue;
             state = State::Correct;
-        }
         else if ((value + diff) == newValue)
-        {
-            value = newValue;
             state = State::Correct;
-        }
+        // missed packet
         else
         {
-            value = newValue;
             state = State::Incorrect;
+            if (strategy == Strategy::ThrowException)
+                throw std::runtime_error("Packet missed");
+            else if (strategy == Strategy::Statistics)
+                missedCount += newValue - (value + diff);
         }
+
+        if (strategy == Strategy::Statistics)
+            capturedCount += diff;
     }
+    value = newValue;
 }
 
-void Validator::validate()
+void Validator::setStrategy(Strategy newStrategy) noexcept
 {
-    if (state == State::Incorrect)
-        throw std::runtime_error("Packet missed");
+    strategy = newStrategy;
 }
 
 void Validator::update(const iec::SeqASDU &sequnce)
@@ -48,8 +46,7 @@ void Validator::update(const iec::SeqASDU &sequnce)
     if (diff > 0 && sequnce.data != nullptr)
     {
         const auto newVal = sequnce.data[0].smpCnt;
-        update(newVal, diff);
-        validate();
+        validate(newVal, diff);
     }
     else
         throw std::runtime_error("Incorrect sequence of ASDU received");

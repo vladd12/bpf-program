@@ -8,8 +8,24 @@
 namespace net
 {
 
+Socket::Socket() : sock_fd(-1), time { 0, 1 }
+{
+}
+
 Socket::Socket(int fd) : sock_fd(fd), time { 0, 1 }
 {
+}
+
+void Socket::setHandle(int fd)
+{
+    if (sock_fd >= 0)
+        close(sock_fd);
+    sock_fd = fd;
+}
+
+int Socket::getHandle()
+{
+    return sock_fd;
 }
 
 void Socket::setWaitInterval(int sec, int usec) noexcept
