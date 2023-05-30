@@ -35,7 +35,6 @@ public:
     explicit PacketCounter(const std::string &iface, const std::string &mac, const std::string &svID);
     ~PacketCounter();
     void readInTime(std::chrono::milliseconds time, TargetSocket target);
-    // void readPackets(std::uint64_t numOfPackets, TargetSocket target);
     void readPacketsNative(std::uint64_t numOfPackets);
     void readPacketsBpf(std::uint64_t numOfPackets);
 };

@@ -32,7 +32,7 @@ RUN dpkg --add-architecture arm64 && apt update && \
 RUN echo "deb [arch=arm64,amd64] http://ftp.ru.debian.org/debian bullseye main" >> /etc/apt/sources.list && \
     apt update && apt install -y --no-install-recommends linux-libc-dev:arm64 \
     libclang-dev:arm64 libclang-cpp-dev:arm64 llvm-dev:arm64 \
-    libelf-dev:arm64 zlib1g-dev:arm64 libbpfcc-dev:arm64 && \
+    libelf-dev:arm64 zlib1g-dev:arm64 libbpfcc-dev:arm64 lipcap-dev:arm64 && \
     mkdir /tmp/work
 
 # Add group and user + sudo

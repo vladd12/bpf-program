@@ -9,7 +9,7 @@ sudo apt install -y --no-install-recommends git cmake ninja-build gcc build-esse
 ```
 apt search linux-headers-$(uname -r)
 sudo apt install linux-headers-$(your_kernel)
-sudo apt install libbpfcc-dev
+sudo apt install libbpfcc-dev xz-utils libpcap-dev
 ```
 
 ## Building on local machine

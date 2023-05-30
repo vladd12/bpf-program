@@ -26,6 +26,17 @@ else()
     Static lib path: ${LIBBCC_STATIC_LIBRARIES}")
 endif()
 
+# Finding libpcap
+find_package(pcap REQUIRED)
+if (NOT LIBPCAP_FOUND)
+    message(FATAL_ERROR "Not found libpcap, please install it")
+else()
+    message(STATUS "libpcap was found:
+    Include path: ${LIBPCAP_INCLUDE_DIR}
+    Dynamic lib path: ${LIBPCAP_LIBRARIES}
+    Static lib path: ${LIBPCAP_STATIC_LIBRARIES}")
+endif()
+
 # Collecting sources of project
 set(bpf_core_h
     include/bpf_exec.h
@@ -58,8 +69,8 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
 
 # Linking libraries
-target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES})
-target_include_directories(bpf_core PUBLIC ${LIBBCC_INCLUDE_DIR})
+target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES} ${LIBPCAP_LIBRARIES})
+target_include_directories(bpf_core PUBLIC ${LIBBCC_INCLUDE_DIR} ${LIBPCAP_INCLUDE_DIR})
 # Compilation flags
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
     target_compile_options(bpf_core PUBLIC -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)

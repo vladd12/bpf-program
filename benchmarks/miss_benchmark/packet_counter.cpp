@@ -148,43 +148,6 @@ void PacketCounter::readInTime(std::chrono::milliseconds time, TargetSocket targ
     validator.reset();
 }
 
-// void PacketCounter::readPackets(std::uint64_t numOfPackets, TargetSocket target)
-//{
-//    bool status = true;
-//    while (validator.capturedCount != numOfPackets)
-//    {
-//        if (target == TargetSocket::Native)
-//        {
-//            nativeSock.nonBlockRead(buf);
-//            status = nativeFilter(buf.data, buf.readSize);
-//        }
-//        else if (target == TargetSocket::BPF)
-//        {
-//            bpfSock.nonBlockRead(buf);
-//            status = bpfFilter(buf.data, buf.readSize);
-//        }
-//        else
-//        {
-//            std::cout << "Unknown target\n";
-//            break;
-//        }
-//        if (status)
-//        {
-//            if (parser.update(buf.data, buf.readSize))
-//            {
-//                auto sequence = parser.parse();
-//                validator.update(sequence);
-//                // auto curr = sequence.data[0].smpCnt;
-//                // printf("Count: %04X\n", curr);
-//                if (sequence.data != nullptr)
-//                    delete[] sequence.data;
-//            }
-//        }
-//    }
-//    printStatistic();
-//    validator.reset();
-//}
-
 void PacketCounter::readPacketsNative(std::uint64_t numOfPackets)
 {
     while (validator.capturedCount != numOfPackets)
@@ -217,8 +180,8 @@ void PacketCounter::readPacketsBpf(std::uint64_t numOfPackets)
             if (parser.update(buf.data, buf.readSize))
             {
                 auto sequence = parser.parse();
-                // auto curr = sequence.data[0].smpCnt;
-                // printf("Count: %04X\n", curr);
+                auto curr = sequence.data[0].smpCnt;
+                printf("Count: %04X\n", curr);
                 validator.update(sequence);
                 if (sequence.data != nullptr)
                     delete[] sequence.data;
