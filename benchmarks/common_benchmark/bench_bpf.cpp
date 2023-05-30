@@ -127,7 +127,7 @@ void BM_bpf(benchmark::State &state)
     {
         while (counter != state.range(0))
         {
-            state.PauseTiming();
+            // state.PauseTiming();
             fd_set fd_in;
             FD_ZERO(&fd_in);
             FD_SET(socket, &fd_in);
@@ -147,13 +147,13 @@ void BM_bpf(benchmark::State &state)
             else
             {
                 // ok
-                state.ResumeTiming();
+                // state.ResumeTiming();
                 auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
                 if (receiveSize >= 0)
                     counter++;
-                state.PauseTiming();
+                // state.PauseTiming();
             }
-            state.ResumeTiming();
+            // state.ResumeTiming();
         }
         counter = 0;
     }
@@ -180,7 +180,7 @@ void BM_native(benchmark::State &state)
     {
         while (counter != state.range(0))
         {
-            state.PauseTiming();
+            // state.PauseTiming();
             fd_set fd_in;
             FD_ZERO(&fd_in);
             FD_SET(socket, &fd_in);
@@ -200,13 +200,13 @@ void BM_native(benchmark::State &state)
             else
             {
                 // ok
-                state.ResumeTiming();
+                // state.ResumeTiming();
                 auto receiveSize = recvfrom(socket, buffer, bufSize, 0, nullptr, nullptr);
                 if (nativeFilter(buffer, receiveSize))
                     counter++;
-                state.PauseTiming();
+                // state.PauseTiming();
             }
-            state.ResumeTiming();
+            // state.ResumeTiming();
         }
         counter = 0;
     }

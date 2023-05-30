@@ -38,7 +38,7 @@ private:
     /// greater than the specified difference, then the validator state changes to incorrect.
     /// Otherwise, the validator state changes to correct. Checking are performed taking
     /// into consideration the boundary values.
-    void validate(const ui16 newValue, const ui8 diff);
+    void validate(const ui16 svID, const ui8 count);
 
 public:
     ui32 missedCount;

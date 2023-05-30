@@ -8,31 +8,36 @@ Validator::Validator() : value(0), state(State::Initial), strategy(Strategy::Thr
 {
 }
 
-void Validator::validate(const ui16 newValue, const ui8 diff)
+void Validator::validate(const ui16 svID, const ui8 count)
 {
     if (state == State::Initial)
         state = State::Correct;
     else
     {
-        auto max = (diff == 1) ? max80p : max256p;
-        if (newValue == min && value == max)
+        auto max = (count == 1) ? max80p : max256p;
+        if (svID == min && value == max)
             state = State::Correct;
-        else if ((value + diff) == newValue)
+        else if ((svID - count) == value)
             state = State::Correct;
         // missed packet
         else
         {
+            printf("Prev: %04X\nCurrent: %04X\n", value, svID);
+            printf("Wait: %04X\n", value + count);
             state = State::Incorrect;
             if (strategy == Strategy::ThrowException)
                 throw std::runtime_error("Packet missed");
             else if (strategy == Strategy::Statistics)
-                missedCount += newValue - (value + diff);
+            {
+                auto missed = svID - (value + count);
+                printf("Missed: %d\n", missed);
+                missedCount += missed;
+            }
         }
-
-        if (strategy == Strategy::Statistics)
-            capturedCount += diff;
     }
-    value = newValue;
+    if (strategy == Strategy::Statistics)
+        capturedCount += count;
+    value = svID;
 }
 
 void Validator::setStrategy(Strategy newStrategy) noexcept
@@ -42,11 +47,12 @@ void Validator::setStrategy(Strategy newStrategy) noexcept
 
 void Validator::update(const iec::SeqASDU &sequnce)
 {
-    const auto diff = sequnce.count;
-    if (diff > 0 && sequnce.data != nullptr)
+    const auto count = sequnce.count;
+    if (count > 0 && sequnce.data != nullptr)
     {
         const auto newVal = sequnce.data[0].smpCnt;
-        validate(newVal, diff);
+        // printf("Value: %04X\n", newVal);
+        validate(newVal, count);
     }
     else
         throw std::runtime_error("Incorrect sequence of ASDU received");

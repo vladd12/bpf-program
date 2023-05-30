@@ -9,6 +9,7 @@
 #include "packet_counter.h"
 
 #include <memory>
+#include <thread>
 
 int main()
 {
@@ -16,7 +17,10 @@ int main()
     using namespace detail;
 
     std::unique_ptr<PacketCounter> pCounter(new PacketCounter("enp0s8", "0x0cefaf3042cc", "ENS80pointMU01"));
-    pCounter->readInTime(1000ms, TargetSocket::Native);
-    pCounter->readInTime(1000ms, TargetSocket::BPF);
+    std::this_thread::sleep_for(1s);
+    // pCounter->readInTime(1000ms, TargetSocket::Native);
+    // pCounter->readInTime(1000ms, TargetSocket::BPF);
+    pCounter->readPacketsNative(4000);
+    pCounter->readPacketsBpf(4000);
     return 0;
 }
