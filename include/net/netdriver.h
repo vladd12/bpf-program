@@ -21,9 +21,9 @@ private:
 public:
     explicit NetDriver() = delete;
     explicit NetDriver(const NetDriver &rhs) = delete;
-    explicit NetDriver(const NetDriver &&rhs) = delete;
+    explicit NetDriver(NetDriver &&rhs) = delete;
     NetDriver &operator=(const NetDriver &rhs) = delete;
-    NetDriver &operator=(const NetDriver &&rhs) = delete;
+    NetDriver &operator=(NetDriver &&rhs) = delete;
 
     explicit NetDriver(const Socket &socket, const std::string &filename)
         : buf { nullptr, util::BUFFER_SIZE, 0 }, sock(socket), output(filename)
