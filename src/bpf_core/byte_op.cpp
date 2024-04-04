@@ -1,4 +1,4 @@
-#include <byte_op.h>
+#include "bpf_core/byte_op.h"
 
 ui16 bytes::byteswap(ui16 x)
 {

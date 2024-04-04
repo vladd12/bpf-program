@@ -1,4 +1,4 @@
-#include <fast_file.h>
+#include "bpf_core/fast_file.h"
 
 FastFile::FastFile(const char *filename) : file(fopen(filename, "a"))
 {

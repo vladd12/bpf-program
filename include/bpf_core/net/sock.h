@@ -1,7 +1,7 @@
 #pragma once
 
+#include <bpf_core/utils.h>
 #include <sys/socket.h>
-#include <utils.h>
 
 namespace net
 {

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <bpf_core/net/sock.h>
+#include <bpf_core/net/validator.h>
 #include <chrono>
-#include <net/sock.h>
-#include <net/validator.h>
 #include <string>
 
 namespace detail

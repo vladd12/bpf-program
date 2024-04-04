@@ -1,10 +1,10 @@
 #pragma once
 
-#include <fast_file.h>
-#include <iec_parser.h>
+#include <bpf_core/fast_file.h>
+#include <bpf_core/iec_parser.h>
+#include <bpf_core/net/sock.h>
+#include <bpf_core/net/validator.h>
 #include <iostream>
-#include <net/sock.h>
-#include <net/validator.h>
 
 namespace net
 {

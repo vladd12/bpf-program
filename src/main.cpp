@@ -1,7 +1,7 @@
-#include <bpf_exec.h>
+#include <bpf_core/bpf_exec.h>
+#include <bpf_core/net/netdriver.h>
+#include <bpf_core/net/pcap-driver.h>
 #include <iostream>
-#include <net/netdriver.h>
-#include <net/pcap-driver.h>
 #include <string>
 
 void inputData(std::string &iface, std::string &srcMac, std::string &svID)

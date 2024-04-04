@@ -1,5 +1,6 @@
+#include "bpf_core/utils.h"
+
 #include <iostream>
-#include <utils.h>
 
 std::string util::read_file(std::ifstream &stream)
 {

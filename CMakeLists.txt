@@ -39,36 +39,43 @@ endif()
 
 # Collecting sources of project
 set(bpf_core_h
-    include/bpf_exec.h
-    include/byte_op.h
-    include/code_formater.h
-    include/fast_file.h
-    include/iec_parser.h
-    include/utils.h
-    include/net/sock.h
-    include/net/netdriver.h
-    include/net/validator.h
-    include/net/pcap-driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/bpf_exec.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/byte_op.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/code_formater.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/fast_file.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec_parser.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/sock.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/netdriver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/validator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/pcap-driver.h
 )
 set(bpf_core_cpp
-    src/bpf_exec.cpp
-    src/byte_op.cpp
-    src/code_formater.cpp
-    src/fast_file.cpp
-    src/iec_parser.cpp
-    src/utils.cpp
-    src/net/sock.cpp
-    src/net/netdriver.cpp
-    src/net/validator.cpp
-    src/net/pcap-driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/bpf_exec.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/byte_op.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/code_formater.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/fast_file.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec_parser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/sock.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/netdriver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/validator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/pcap-driver.cpp
 )
-set(bpf_app_cpp src/main.cpp)
+set(bpf_app_cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
 
 # Adding paths of headers to include
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Compilation static library as part of project
 add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
+
+# Including directories for library
+target_include_directories(bpf_core PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 # Linking libraries
 target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES} ${LIBPCAP_LIBRARIES})

@@ -1,4 +1,6 @@
-#include <bpf_exec.h>
+#include "bpf_core/bpf_exec.h"
+
+#include <bpf_core/utils.h>
 #include <cstdio>
 #include <fstream>
 #include <linux/bpf.h>
@@ -9,10 +11,6 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <utils.h>
-
-/// TODO: temporary, remove later
-#include <iostream>
 
 BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
 {

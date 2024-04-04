@@ -1,6 +1,6 @@
 #pragma once
 
-#include <byte_op.h>
+#include <bpf_core/byte_op.h>
 
 /**
   Struct of IEC-61850-9-2 Sample Values Light Edition frame format
