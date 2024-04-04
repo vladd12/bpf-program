@@ -10,7 +10,7 @@ set(common_benchmark_sources
 )
 
 add_executable(${PROJECT_NAME} ${common_benchmark_sources})
-target_link_libraries(${PROJECT_NAME} benchmark::benchmark_main bpf_core)
+target_link_libraries(${PROJECT_NAME} benchmark::benchmark_main iec_core)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
     target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wpedantic -Werror -Wno-unused-result -fPIC)

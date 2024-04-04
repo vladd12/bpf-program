@@ -1,15 +1,15 @@
 #pragma once
 
-#include <bpf_core/iec/iec_parser.h>
-#include <bpf_core/iec/validator.h>
-#include <bpf_core/utils/fast_file.h>
-#include <bpf_core/utils/socket.h>
+#include <iec_core/iec/iec_parser.h>
+#include <iec_core/iec/validator.h>
+#include <iec_core/utils/fast_file.h>
+#include <iec_core/utils/socket.h>
 #include <iostream>
 
-namespace net
+namespace engines
 {
 
-class BPFDriver
+class BPFEngine
 {
 private:
     utils::Buffer buf;
@@ -19,18 +19,18 @@ private:
     iec::Validator validator;
 
 public:
-    explicit BPFDriver() = delete;
-    explicit BPFDriver(const BPFDriver &rhs) = delete;
-    explicit BPFDriver(BPFDriver &&rhs) = delete;
-    BPFDriver &operator=(const BPFDriver &rhs) = delete;
-    BPFDriver &operator=(BPFDriver &&rhs) = delete;
+    explicit BPFEngine() = delete;
+    explicit BPFEngine(const BPFEngine &rhs) = delete;
+    explicit BPFEngine(BPFEngine &&rhs) = delete;
+    BPFEngine &operator=(const BPFEngine &rhs) = delete;
+    BPFEngine &operator=(BPFEngine &&rhs) = delete;
 
-    explicit BPFDriver(const utils::Socket &socket, const std::string &filename) : sock(socket), output(filename)
+    explicit BPFEngine(const utils::Socket &socket, const std::string &filename) : sock(socket), output(filename)
     {
         buf.data = new u8[buf.allocSize];
     }
 
-    ~BPFDriver()
+    ~BPFEngine()
     {
         delete[] buf.data;
         sock.closeSock();
@@ -56,4 +56,4 @@ public:
     }
 };
 
-}
+} // namespace engines

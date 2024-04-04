@@ -38,53 +38,53 @@ else()
 endif()
 
 # Collecting sources of project
-set(bpf_core_h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/bpf_exec.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/byte_op.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/iec_parser.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/validator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/netdriver.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/pcap-driver.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/code_formater.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/fast_file.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/helpers.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/socket.h
+set(iec_core_h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_engine.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_exec.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/pcap_engine.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/byte_op.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/iec_parser.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/validator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/code_formater.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/fast_file.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/helpers.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/socket.h
 )
-set(bpf_core_cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/bpf_exec.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/byte_op.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/iec_parser.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/validator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/netdriver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/pcap-driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/code_formater.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/fast_file.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/helpers.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/socket.cpp
+set(iec_core_cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_engine.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_exec.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/pcap_engine.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/byte_op.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/iec_parser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/validator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/code_formater.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/fast_file.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/helpers.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/socket.cpp
 )
 set(bpf_app_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
 # Compilation static library as part of project
-add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
+add_library(iec_core STATIC ${iec_core_h} ${iec_core_cpp})
 
 # Including directories for library
-target_include_directories(bpf_core PUBLIC
+target_include_directories(iec_core PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include;${LIBBCC_LIBRARIES}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 # Linking libraries
-target_link_libraries(bpf_core PUBLIC ${LIBBCC_LIBRARIES} ${LIBPCAP_LIBRARIES})
-target_include_directories(bpf_core PUBLIC ${LIBBCC_INCLUDE_DIR} ${LIBPCAP_INCLUDE_DIR})
+target_link_libraries(iec_core PUBLIC ${LIBBCC_LIBRARIES} ${LIBPCAP_LIBRARIES})
+target_include_directories(iec_core PUBLIC ${LIBBCC_INCLUDE_DIR} ${LIBPCAP_INCLUDE_DIR})
 # Compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-  target_compile_options(bpf_core PUBLIC -Wall -Wextra -Wpedantic -Wno-unused-result -fPIC)
+  target_compile_options(iec_core PUBLIC -Wall -Wextra -Wpedantic -Wno-unused-result -fPIC)
 endif()
 
 # Compilation application
 add_executable(${PROJECT_NAME} ${bpf_app_cpp})
-target_link_libraries(${PROJECT_NAME} PUBLIC bpf_core)
+target_link_libraries(${PROJECT_NAME} PUBLIC iec_core)
 # Compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
   target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wpedantic -Wno-unused-result -fPIC)

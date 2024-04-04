@@ -1,11 +1,11 @@
-#include "bpf_core/net/pcap-driver.h"
+#include "iec_core/engines/pcap_engine.h"
 
 #include <pcap.h>
 
-namespace net
+namespace engines
 {
 
-PCAPDriver::PCAPDriver()
+PCAPEngine::PCAPEngine()
 {
     char error_buffer[PCAP_ERRBUF_SIZE]; /* Size defined in pcap.h */
     auto iface_list = new pcap_if_t[5];
@@ -20,4 +20,4 @@ PCAPDriver::PCAPDriver()
     // printf("Network device found: %s\n", device);
 }
 
-}
+} // namespace engines

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bcc/bcc_exception.h>
 #include <cstdint>
 #include <fstream>
 #include <linux/if_ether.h>

@@ -1,4 +1,4 @@
-#include "bpf_core/iec/byte_op.h"
+#include "iec_core/iec/byte_op.h"
 
 u16 bytes::byteswap(u16 x)
 {
