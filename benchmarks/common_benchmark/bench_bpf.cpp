@@ -20,12 +20,12 @@ constexpr auto iface = "enp0s8";
 constexpr auto iface = "eth0";
 #endif
 
-std::unique_ptr<BpfExec> bpfExecutor;
+std::unique_ptr<BPFExecutor> bpfExecutor;
 int socket;
 
 void createRawSocket([[maybe_unused]] const benchmark::State &state)
 {
-    socket = BpfExec::getRawSocket(iface);
+    socket = BPFExecutor::getRawSocket(iface);
 }
 
 std::uint16_t byteswap(std::uint16_t val)
@@ -90,9 +90,9 @@ bool nativeFilter(std::uint8_t *data, std::size_t size)
 
 void createBpfSocket([[maybe_unused]] const benchmark::State &state)
 {
-    bpfExecutor = std::unique_ptr<BpfExec>(new BpfExec("bpf/ethernet-parse.c"));
+    bpfExecutor = std::unique_ptr<BPFExecutor>(new BPFExecutor("bpf/ethernet-parse.c"));
     bpfExecutor->filterSourceCode(iface, "0x0cefaf3042cc", "ENS80pointMU01");
-    auto status = bpfExecutor->run();
+    auto status = bpfExecutor->load();
     if (status.ok())
     {
         int sock = -1;

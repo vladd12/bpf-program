@@ -12,11 +12,11 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(programPath)
+BPFExecutor::BPFExecutor(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(programPath)
 {
 }
 
-int BpfExec::getRawSocket(const std::string &ifaceName)
+int BPFExecutor::getRawSocket(const std::string &ifaceName)
 {
     constexpr int error = -1;
     int status = error;
@@ -67,7 +67,7 @@ int BpfExec::getRawSocket(const std::string &ifaceName)
     return sock_fd;
 }
 
-void BpfExec::filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
+void BPFExecutor::filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID)
 {
     constexpr static auto svReplacement1 = R"(char cmp_str[] = "%SV_ID";)";
     constexpr static auto svReplacement2 = R"(
@@ -89,12 +89,12 @@ void BpfExec::filterSourceCode(const std::string &ifaceName, const std::string &
     // std::cout << "code:\n\n" << bpfProg.getSourceCode() << "\n\n";
 }
 
-ebpf::StatusTuple BpfExec::run()
+ebpf::StatusTuple BPFExecutor::load()
 {
     return bpfPtr->init(bpfProg.getSourceCode(), { "-Wno-macro-redefined" });
 }
 
-ebpf::StatusTuple BpfExec::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
+ebpf::StatusTuple BPFExecutor::attachRawSocket(const std::string &ifaceName, const int function, int &socket)
 {
     socket = getRawSocket(ifaceName);
     if (socket >= 0)
@@ -112,7 +112,7 @@ ebpf::StatusTuple BpfExec::attachRawSocket(const std::string &ifaceName, const i
         return ebpf::StatusTuple(-1, "bpf: Failed open socket for device %s", ifaceName.c_str());
 }
 
-ebpf::StatusTuple BpfExec::getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName)
+ebpf::StatusTuple BPFExecutor::getDeviceSocket(int &sock_fd, const std::string &functionName, const std::string &ifaceName)
 {
     int fd_func = -1;
     auto status = bpfPtr->load_func(functionName, BPF_PROG_TYPE_SOCKET_FILTER, fd_func);

@@ -3,7 +3,7 @@
 #include <bcc/BPF.h>
 #include <iec_core/utils/code_formater.h>
 
-class BpfExec
+class BPFExecutor
 {
 private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
@@ -14,7 +14,7 @@ private:
 
 public:
     /// \brief Default c-tor.
-    explicit BpfExec(const std::string &programPath);
+    explicit BPFExecutor(const std::string &programPath);
 
     /// \brief Getting a raw socket and binding it to interface, specified by ifaceName.
     static int getRawSocket(const std::string &ifaceName);
@@ -23,7 +23,7 @@ public:
     void filterSourceCode(const std::string &ifaceName, const std::string &srcMac, const std::string &svID);
 
     /// \brief Running BPF program.
-    ebpf::StatusTuple run();
+    ebpf::StatusTuple load();
 
     /// \brief Getting device socket, that associated with the BPF program function.
     /// \param sock_fd [in, out] - the associated with BPF function socket.

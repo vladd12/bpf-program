@@ -10,10 +10,10 @@ namespace detail
 PacketCounter::PacketCounter(const std::string &iface, const std::string &mac, const std::string &svID)
 {
     buf.data = new u8[buf.allocSize];
-    nativeSock.setHandle(BpfExec::getRawSocket(iface));
-    std::unique_ptr<BpfExec> bpfExecutor(new BpfExec("bpf/ethernet-parse.c"));
+    nativeSock.setHandle(BPFExecutor::getRawSocket(iface));
+    std::unique_ptr<BPFExecutor> bpfExecutor(new BPFExecutor("bpf/ethernet-parse.c"));
     bpfExecutor->filterSourceCode(iface, mac, svID);
-    auto status = bpfExecutor->run();
+    auto status = bpfExecutor->load();
     if (status.ok())
     {
         int sock = -1;

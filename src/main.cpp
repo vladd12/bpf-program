@@ -18,7 +18,7 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 
 int main()
 {
-    std::unique_ptr<BpfExec> bpf(new BpfExec("bpf/ethernet-parse.c"));
+    std::unique_ptr<BPFExecutor> bpf(new BPFExecutor("bpf/ethernet-parse.c"));
     std::string ifaceName = "enp0s8";          // enp0s8 - VM, eth0 - hardware
     std::string srcMacAddr = "0x0cefaf3042cc"; // 0x0cefaf3042cc - 80p, 0x0cefaf3042cd - 256p
     std::string svID = "ENS80pointMU01";       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p

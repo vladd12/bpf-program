@@ -6,6 +6,8 @@
 #include <iec_core/utils/socket.h>
 #include <iostream>
 
+class BPFExecutor;
+
 namespace engines
 {
 
@@ -13,10 +15,12 @@ class BPFEngine
 {
 private:
     utils::Buffer buf;
-    utils::Socket sock;
     utils::FastFile output;
+    utils::Socket sock;
     iec::IecParser parser;
     iec::Validator validator;
+
+    explicit BPFEngine(const std::string &filename);
 
 public:
     explicit BPFEngine() = delete;
@@ -25,35 +29,13 @@ public:
     BPFEngine &operator=(const BPFEngine &rhs) = delete;
     BPFEngine &operator=(BPFEngine &&rhs) = delete;
 
-    explicit BPFEngine(const utils::Socket &socket, const std::string &filename) : sock(socket), output(filename)
-    {
-        buf.data = new u8[buf.allocSize];
-    }
+    explicit BPFEngine(const utils::Socket &socket, const std::string &filename);
+    explicit BPFEngine(const BPFExecutor &executor, const std::string &filename);
+    ~BPFEngine();
 
-    ~BPFEngine()
-    {
-        delete[] buf.data;
-        sock.closeSock();
-    }
+    void run();
 
-    void run()
-    {
-        while (true)
-        {
-            sock.nonBlockRead(buf);
-            if (parser.update(buf.data, buf.readSize))
-            {
-                auto sequence = parser.parse();
-                validator.update(sequence);
-
-                auto curr = sequence.data[0].smpCnt;
-                printf("Count: %04X\n", curr);
-
-                if (sequence.data != nullptr)
-                    delete[] sequence.data;
-            }
-        }
-    }
+    static BPFEngine create(const std::string_view &a, const std::string_view &b, const std::string_view &c);
 };
 
 } // namespace engines
