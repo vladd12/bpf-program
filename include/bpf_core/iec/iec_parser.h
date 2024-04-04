@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bpf_core/byte_op.h>
+#include <bpf_core/iec/byte_op.h>
 
 /**
   Struct of IEC-61850-9-2 Sample Values Light Edition frame format
@@ -26,48 +26,48 @@ namespace iec
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 struct PDUHeader
 {
-    ui16 appID;
-    ui16 length;
-    ui16 res1;
-    ui16 res2;
+    u16 appID;
+    u16 length;
+    u16 res1;
+    u16 res2;
 } __attribute__((__packed__));
 
 /// \brief Detail quality bitset of a single sample value (current or voltage).
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 union DetailQual {
-    ui8 _data;
+    u8 _data;
     struct __attribute__((__packed__))
     {
-        ui8 overflow : 1;
-        ui8 outOfRange : 1;
-        ui8 badReference : 1;
-        ui8 oscillatory : 1;
-        ui8 failure : 1;
-        ui8 oldData : 1;
-        ui8 inconsistent : 1;
-        ui8 inaccurate : 1;
+        u8 overflow : 1;
+        u8 outOfRange : 1;
+        u8 badReference : 1;
+        u8 oscillatory : 1;
+        u8 failure : 1;
+        u8 oldData : 1;
+        u8 inconsistent : 1;
+        u8 inaccurate : 1;
     } data;
 };
 
 /// \brief Data unit for transmitting the sample value and its quality.
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 union DataUnit {
-    ui64 _data;
+    u64 _data;
     struct __attribute__((__packed__))
     {
-        ui32 instMagI;
-        ui16 quality;
+        u32 instMagI;
+        u16 quality;
         union bitfield {
-            ui16 _data;
+            u16 _data;
             struct __attribute__((__packed__))
             {
-                ui16 reserved : 2;
-                ui16 der : 1;
-                ui16 opB : 1;
-                ui16 test : 1;
-                ui16 src : 1;
-                ui16 dQual : 8;
-                ui16 valid : 2;
+                u16 reserved : 2;
+                u16 der : 1;
+                u16 opB : 1;
+                u16 test : 1;
+                u16 src : 1;
+                u16 dQual : 8;
+                u16 valid : 2;
             } data;
         } bitset;
     } data;
@@ -75,7 +75,7 @@ union DataUnit {
     /// \brief Returns detail quality bitset of the sample value.
     auto getQuality() const
     {
-        return DetailQual { ui8(data.bitset.data.dQual) };
+        return DetailQual { u8(data.bitset.data.dQual) };
     }
 };
 
@@ -90,9 +90,9 @@ constexpr auto unitsPerASDU = 8;
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 struct ASDU
 {
-    ui16 smpCnt;                 ///< Sample count.
-    ui32 confRev;                ///< Config revision.
-    ui8 smpSynch;                ///< Sample synchronisation.
+    u16 smpCnt;                  ///< Sample count.
+    u32 confRev;                 ///< Config revision.
+    u8 smpSynch;                 ///< Sample synchronisation.
     DataUnit data[unitsPerASDU]; ///< Sequence of data.
 };
 
@@ -100,7 +100,7 @@ struct ASDU
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 struct SeqASDU
 {
-    ui8 count;
+    u8 count;
     ASDU *data;
 };
 
@@ -108,24 +108,24 @@ struct SeqASDU
 class IecParser final
 {
 private:
-    ui8 *mData;
-    ui16 mSize;
+    u8 *mData;
+    u16 mSize;
 
     /// \brief Applying offset to the data pointer (to the frame buffer) and current the byte sequence size.
     /// \details Used when reading from the frame buffer occurs.
-    bool applyOffset(ui16 offset);
+    bool applyOffset(u16 offset);
 
     /// \brief Verifying size of the byte sequence.
-    bool verifySize(ui16 size) const;
+    bool verifySize(u16 size) const;
 
-    /// \brief Returns a byte (ui8) from the frame buffer.
-    ui8 readByte();
-    /// \brief Returns a word (ui16) from the frame buffer.
-    ui16 readWord();
-    /// \brief Returns a double word (ui32) from the frame buffer.
-    ui32 readDword();
-    /// \brief Returns a quadro word (ui64) from the frame buffer.
-    ui64 readQword();
+    /// \brief Returns a byte (u8) from the frame buffer.
+    u8 readByte();
+    /// \brief Returns a word (u16) from the frame buffer.
+    u16 readWord();
+    /// \brief Returns a double word (u32) from the frame buffer.
+    u32 readDword();
+    /// \brief Returns a quadro word (u64) from the frame buffer.
+    u64 readQword();
 
     /// \brief Returns object with specified type from the frame buffer.
     template <typename T> T read()
@@ -138,7 +138,7 @@ private:
     /// \brief Parses the length of data in ASN format from the
     /// frame buffer and returns its integer representation.
     /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
-    ui32 parseAsnLength();
+    u32 parseAsnLength();
 
     /// \brief Parses the protocol data unit of frame.
     /// \param seq[in, out] - contains results of parsing.
@@ -155,10 +155,10 @@ private:
 
 public:
     explicit IecParser();
-    explicit IecParser(ui8 *data, const ui16 size);
+    explicit IecParser(u8 *data, const u16 size);
 
     /// \brief Update internal pointer to the frame buffer with the frame data, and its size.
-    bool update(ui8 *data, const ui16 size);
+    bool update(u8 *data, const u16 size);
 
     /// \brief Returns the sequence of ASDU, parsed from the frame buffer.
     SeqASDU parse();

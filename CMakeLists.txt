@@ -40,34 +40,31 @@ endif()
 # Collecting sources of project
 set(bpf_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/bpf_exec.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/byte_op.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/code_formater.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/fast_file.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec_parser.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/socket.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/byte_op.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/iec_parser.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec/validator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/netdriver.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/validator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/pcap-driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/code_formater.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/fast_file.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/helpers.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils/socket.h
 )
 set(bpf_core_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/bpf_exec.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/byte_op.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/code_formater.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/fast_file.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec_parser.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/socket.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/byte_op.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/iec_parser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec/validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/netdriver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/pcap-driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/code_formater.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/fast_file.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/helpers.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils/socket.cpp
 )
 set(bpf_app_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
-
-# Adding paths of headers to include
-include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Compilation static library as part of project
 add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})

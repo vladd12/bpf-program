@@ -1,14 +1,14 @@
-#include "bpf_core/byte_op.h"
+#include "bpf_core/iec/byte_op.h"
 
-ui16 bytes::byteswap(ui16 x)
+u16 bytes::byteswap(u16 x)
 {
     union {
         struct
         {
-            ui8 a;
-            ui8 b;
+            u8 a;
+            u8 b;
         } byteset;
-        ui16 value;
+        u16 value;
     } y, z;
 
     y.value = x;
@@ -17,17 +17,17 @@ ui16 bytes::byteswap(ui16 x)
     return z.value;
 }
 
-ui32 bytes::byteswap(ui32 x)
+u32 bytes::byteswap(u32 x)
 {
     union {
         struct
         {
-            ui8 a;
-            ui8 b;
-            ui8 c;
-            ui8 d;
+            u8 a;
+            u8 b;
+            u8 c;
+            u8 d;
         } byteset;
-        ui32 value;
+        u32 value;
     } y, z;
 
     y.value = x;
@@ -38,21 +38,21 @@ ui32 bytes::byteswap(ui32 x)
     return z.value;
 }
 
-ui64 bytes::byteswap(ui64 x)
+u64 bytes::byteswap(u64 x)
 {
     union {
         struct
         {
-            ui8 a;
-            ui8 b;
-            ui8 c;
-            ui8 d;
-            ui8 e;
-            ui8 f;
-            ui8 g;
-            ui8 h;
+            u8 a;
+            u8 b;
+            u8 c;
+            u8 d;
+            u8 e;
+            u8 f;
+            u8 g;
+            u8 h;
         } byteset;
-        ui64 value;
+        u64 value;
     } y, z;
 
     y.value = x;

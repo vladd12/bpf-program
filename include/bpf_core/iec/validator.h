@@ -1,12 +1,12 @@
 #pragma once
 
-#include <bpf_core/iec_parser.h>
+#include <bpf_core/iec/iec_parser.h>
 
-namespace net
+namespace iec
 {
 
 /// \brief Enumeration for use as a validator state.
-enum class State : ui8
+enum class State : u8
 {
     Initial = 0,
     Correct,
@@ -14,7 +14,7 @@ enum class State : ui8
 };
 
 /// \brief Enumeration for use as a validator strategy.
-enum class Strategy : ui8
+enum class Strategy : u8
 {
     ThrowException = 0,
     Statistics
@@ -25,11 +25,11 @@ enum class Strategy : ui8
 class Validator
 {
 private:
-    static constexpr ui16 min = 0;         ///< Minimum value of the sample value count.
-    static constexpr ui16 max80p = 3999;   ///< Maximum value of the sample value count for 80 points per period.
-    static constexpr ui16 max256p = 12799; ///< Maximum value of the sample value count for 256 points per period.
+    static constexpr u16 min = 0;         ///< Minimum value of the sample value count.
+    static constexpr u16 max80p = 3999;   ///< Maximum value of the sample value count for 80 points per period.
+    static constexpr u16 max256p = 12799; ///< Maximum value of the sample value count for 256 points per period.
 
-    ui16 value;
+    u16 value;
     State state;
     Strategy strategy;
 
@@ -38,13 +38,13 @@ private:
     /// greater than the specified difference, then the validator state changes to incorrect.
     /// Otherwise, the validator state changes to correct. Checking are performed taking
     /// into consideration the boundary values.
-    void validate(const ui16 svID, const ui8 count);
+    void validate(const u16 svID, const u8 count);
 
 public:
-    ui32 missedCount;
-    ui64 capturedCount;
+    u32 missedCount;
+    u64 capturedCount;
 
-    explicit Validator();
+    explicit Validator() noexcept;
 
     /// Setter for a validator strategy.
     void setStrategy(Strategy newStrategy) noexcept;
@@ -56,4 +56,4 @@ public:
     void reset() noexcept;
 };
 
-}
+} // namespace iec

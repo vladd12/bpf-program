@@ -1,15 +1,16 @@
-#include "bpf_core/net/validator.h"
+#include "bpf_core/iec/validator.h"
 
 #include <stdexcept>
 
-namespace net
+namespace iec
 {
 
-Validator::Validator() : value(0), state(State::Initial), strategy(Strategy::ThrowException), missedCount(0), capturedCount(0)
+Validator::Validator() noexcept
+    : value(0), state(State::Initial), strategy(Strategy::ThrowException), missedCount(0), capturedCount(0)
 {
 }
 
-void Validator::validate(const ui16 svID, const ui8 count)
+void Validator::validate(const u16 svID, const u8 count)
 {
     if (state == State::Initial)
         state = State::Correct;
@@ -66,4 +67,4 @@ void Validator::reset() noexcept
     capturedCount = 0;
 }
 
-}
+} // namespace iec

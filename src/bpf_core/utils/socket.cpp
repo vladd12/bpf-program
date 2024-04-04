@@ -1,4 +1,4 @@
-#include "bpf_core/net/socket.h"
+#include "bpf_core/utils/socket.h"
 
 #include <thread>
 
@@ -6,7 +6,7 @@
 #include <net/ethernet.h>
 #include <unistd.h>
 
-namespace net
+namespace utils
 {
 
 Socket::Socket() : sock_fd(-1), time { 0, 1 }
@@ -61,12 +61,12 @@ void Socket::closeSock()
     close(sock_fd);
 }
 
-void Socket::blockRead(util::Buffer &buf)
+void Socket::blockRead(Buffer &buf)
 {
     buf.readSize = recvfrom(sock_fd, buf.data, buf.allocSize, 0, nullptr, nullptr);
 }
 
-void Socket::nonBlockRead(util::Buffer &buf)
+void Socket::nonBlockRead(Buffer &buf)
 {
     while (true)
     {

@@ -4,6 +4,12 @@
 #include <memory>
 #include <string>
 
+namespace utils
+{
+
+namespace details
+{
+
 /// \brief Structure for closing the captured file's handle.
 struct FileCloser
 {
@@ -13,7 +19,9 @@ struct FileCloser
     }
 };
 
-using FilePtr = std::unique_ptr<FILE, FileCloser>; ///< Container for the FILE pointer.
+} // namespace details
+
+using FilePtr = std::unique_ptr<FILE, details::FileCloser>; ///< Container for the FILE pointer.
 
 /// \brief Class for creating file objects with fast writing data.
 class FastFile
@@ -44,3 +52,5 @@ public:
         return write(std::to_string(number) + '\n');
     }
 };
+
+} // namespace utils

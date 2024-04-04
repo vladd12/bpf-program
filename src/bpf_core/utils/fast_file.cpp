@@ -1,4 +1,7 @@
-#include "bpf_core/fast_file.h"
+#include "bpf_core/utils/fast_file.h"
+
+namespace utils
+{
 
 FastFile::FastFile(const char *filename) : file(fopen(filename, "a"))
 {
@@ -25,3 +28,5 @@ bool FastFile::write(const std::string &text)
 {
     return write(text.c_str());
 }
+
+} // namespace utils

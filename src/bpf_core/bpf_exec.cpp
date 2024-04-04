@@ -1,6 +1,6 @@
 #include "bpf_core/bpf_exec.h"
 
-#include <bpf_core/utils.h>
+#include <bpf_core/utils/helpers.h>
 #include <cstdio>
 #include <fstream>
 #include <linux/bpf.h>
@@ -12,7 +12,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(util::read_file(programPath))
+BpfExec::BpfExec(const std::string &programPath) : bpfPtr(new ebpf::BPF), bpfProg(programPath)
 {
 }
 
@@ -75,7 +75,7 @@ void BpfExec::filterSourceCode(const std::string &ifaceName, const std::string &
             return false;
     )";
 
-    bpfProg.replace("%IFACE_MAC", util::get_mac_by_iface_name(ifaceName));
+    bpfProg.replace("%IFACE_MAC", utils::get_mac_by_iface_name(ifaceName));
     bpfProg.replace("%SRC_MAC", srcMac);
     if (!svID.empty())
         bpfProg.replace("%SV_ID", svID);

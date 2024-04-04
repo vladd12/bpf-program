@@ -25,7 +25,7 @@ int main()
     // inputData(ifaceName, srcMacAddr, svID);
     bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
-    net::PcapDriver driver;
+    net::PCAPDriver driver;
 
     /*
     auto status = bpf->run();

@@ -3,10 +3,10 @@
 namespace net
 {
 
-class PcapDriver
+class PCAPDriver
 {
 public:
-    PcapDriver();
+    PCAPDriver();
 };
 
 }

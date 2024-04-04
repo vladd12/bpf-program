@@ -1,4 +1,4 @@
-#include "bpf_core/iec_parser.h"
+#include "bpf_core/iec/iec_parser.h"
 
 #include <cassert>
 #include <cstring>
@@ -11,11 +11,11 @@ IecParser::IecParser() : mData(nullptr), mSize(0)
 {
 }
 
-IecParser::IecParser(ui8 *data, const ui16 size) : mData(data), mSize(size)
+IecParser::IecParser(u8 *data, const u16 size) : mData(data), mSize(size)
 {
 }
 
-bool IecParser::update(ui8 *data, const ui16 size)
+bool IecParser::update(u8 *data, const u16 size)
 {
     if (data != nullptr && size > 0)
     {
@@ -26,7 +26,7 @@ bool IecParser::update(ui8 *data, const ui16 size)
     return false;
 }
 
-bool IecParser::applyOffset(ui16 offset)
+bool IecParser::applyOffset(u16 offset)
 {
     if (mSize - offset >= 0)
     {
@@ -37,45 +37,45 @@ bool IecParser::applyOffset(ui16 offset)
     return false;
 }
 
-bool IecParser::verifySize(ui16 size) const
+bool IecParser::verifySize(u16 size) const
 {
     return size == mSize;
 }
 
-ui8 IecParser::readByte()
+u8 IecParser::readByte()
 {
-    auto _byte = read<ui8>();
+    auto _byte = read<u8>();
     return _byte;
 }
 
-ui16 IecParser::readWord()
+u16 IecParser::readWord()
 {
-    auto _word = read<ui16>();
+    auto _word = read<u16>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _word = bytes::byteswap(_word);
     return _word;
 }
 
-ui32 IecParser::readDword()
+u32 IecParser::readDword()
 {
-    auto _dword = read<ui32>();
+    auto _dword = read<u32>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _dword = bytes::byteswap(_dword);
     return _dword;
 }
 
-ui64 IecParser::readQword()
+u64 IecParser::readQword()
 {
-    auto _qword = read<ui64>();
+    auto _qword = read<u64>();
     if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
         _qword = bytes::byteswap(_qword);
     return _qword;
 }
 
-ui32 IecParser::parseAsnLength()
+u32 IecParser::parseAsnLength()
 {
     auto firstByte = readByte();
-    ui32 length = 0;
+    u32 length = 0;
     if (firstByte & 0x80)
     {
         auto asnLength = firstByte & 0x7f;
@@ -96,11 +96,11 @@ ui32 IecParser::parseAsnLength()
 
 bool IecParser::parsePDU(SeqASDU &seq)
 {
-    constexpr ui8 stdPduId = 0x60;
-    constexpr ui8 stdNoAsduId = 0x80;
+    constexpr u8 stdPduId = 0x60;
+    constexpr u8 stdNoAsduId = 0x80;
 
     auto head = PDUHeader { readWord(), readWord(), readWord(), readWord() };
-    ui32 length = head.length - sizeof(head);
+    u32 length = head.length - sizeof(head);
     if (!verifySize(length))
         return false;
     // reading savPDU
@@ -132,7 +132,7 @@ bool IecParser::parseSequence(SeqASDU &seq)
     auto seqAsduId = readByte();
     if (seqAsduId != 0xa2)
         return false;
-    ui32 length = parseAsnLength();
+    u32 length = parseAsnLength();
     if (!verifySize(length))
         return false;
 

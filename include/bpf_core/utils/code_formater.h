@@ -3,6 +3,9 @@
 #include <fstream>
 #include <string>
 
+namespace utils
+{
+
 /// \brief Class for formatting BPF source code.
 class SourceCodeFormater
 {
@@ -10,8 +13,9 @@ private:
     std::string sourceCode;
 
 public:
-    explicit SourceCodeFormater() noexcept = default;
-    explicit SourceCodeFormater(const std::string &src) noexcept;
+    explicit SourceCodeFormater() noexcept = delete;
+
+    explicit SourceCodeFormater(const std::string_view &srcFilepath);
     explicit SourceCodeFormater(std::ifstream &srcFile);
 
     /// \brief Setting new source code as string.
@@ -21,8 +25,10 @@ public:
     const std::string &getSourceCode() const noexcept;
 
     /// \brief Replace all occurrences of "match" string in the source code with "replace" string.
-    void replace(const std::string &match, const std::string &replace);
+    void replace(const std::string_view match, const std::string_view replace);
 
     /// \brief Remove all occurrences of "match" string in the source code.
-    void remove(const std::string &match);
+    void remove(const std::string_view match);
 };
+
+} // namespace utils

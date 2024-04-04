@@ -5,7 +5,7 @@
 namespace net
 {
 
-PcapDriver::PcapDriver()
+PCAPDriver::PCAPDriver()
 {
     char error_buffer[PCAP_ERRBUF_SIZE]; /* Size defined in pcap.h */
     auto iface_list = new pcap_if_t[5];

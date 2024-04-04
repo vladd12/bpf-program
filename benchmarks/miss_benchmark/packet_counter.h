@@ -1,18 +1,18 @@
 #pragma once
 
-#include <bpf_core/net/socket.h>
-#include <bpf_core/net/validator.h>
+#include <bpf_core/iec/validator.h>
+#include <bpf_core/utils/socket.h>
 #include <chrono>
 #include <string>
 
 namespace detail
 {
 using iec::IecParser;
-using net::Socket;
-using net::Validator;
-using util::Buffer;
+using iec::Validator;
+using utils::Buffer;
+using utils::Socket;
 
-enum class TargetSocket : ui8
+enum class TargetSocket : u8
 {
     Native = 0,
     BPF

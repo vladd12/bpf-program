@@ -19,3 +19,4 @@ ColumnLimit: 130
 PointerBindsToType: false
 SpaceBeforeParens: ControlStatements
 IncludeBlocks: Regroup
+NamespaceIndentation: None

@@ -1,13 +1,13 @@
 #pragma once
 
 #include <bcc/BPF.h>
-#include <bpf_core/code_formater.h>
+#include <bpf_core/utils/code_formater.h>
 
 class BpfExec
 {
 private:
     std::unique_ptr<ebpf::BPF> bpfPtr;
-    SourceCodeFormater bpfProg;
+    utils::SourceCodeFormater bpfProg;
 
     /// \brief Attaching raw socket for listening ethernet interface, specified by ifaceName.
     ebpf::StatusTuple attachRawSocket(const std::string &ifaceName, const int function, int &socket);

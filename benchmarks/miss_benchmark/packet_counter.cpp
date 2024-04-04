@@ -8,9 +8,8 @@ namespace detail
 {
 
 PacketCounter::PacketCounter(const std::string &iface, const std::string &mac, const std::string &svID)
-    : buf { nullptr, util::BUFFER_SIZE, 0 }
 {
-    buf.data = new ui8[buf.allocSize];
+    buf.data = new u8[buf.allocSize];
     nativeSock.setHandle(BpfExec::getRawSocket(iface));
     std::unique_ptr<BpfExec> bpfExecutor(new BpfExec("bpf/ethernet-parse.c"));
     bpfExecutor->filterSourceCode(iface, mac, svID);
@@ -22,7 +21,7 @@ PacketCounter::PacketCounter(const std::string &iface, const std::string &mac, c
         if (status.ok() && sock >= 0)
             bpfSock.setHandle(sock);
     }
-    validator.setStrategy(net::Strategy::Statistics);
+    validator.setStrategy(iec::Strategy::Statistics);
 }
 
 PacketCounter::~PacketCounter()

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <bpf_core/fast_file.h>
-#include <bpf_core/iec_parser.h>
-#include <bpf_core/net/socket.h>
-#include <bpf_core/net/validator.h>
+#include <bpf_core/iec/iec_parser.h>
+#include <bpf_core/iec/validator.h>
+#include <bpf_core/utils/fast_file.h>
+#include <bpf_core/utils/socket.h>
 #include <iostream>
 
 namespace net
@@ -12,11 +12,11 @@ namespace net
 class BPFDriver
 {
 private:
-    util::Buffer buf;
-    Socket sock;
+    utils::Buffer buf;
+    utils::Socket sock;
+    utils::FastFile output;
     iec::IecParser parser;
-    FastFile output;
-    Validator validator;
+    iec::Validator validator;
 
 public:
     explicit BPFDriver() = delete;
@@ -25,10 +25,9 @@ public:
     BPFDriver &operator=(const BPFDriver &rhs) = delete;
     BPFDriver &operator=(BPFDriver &&rhs) = delete;
 
-    explicit BPFDriver(const Socket &socket, const std::string &filename)
-        : buf { nullptr, util::BUFFER_SIZE, 0 }, sock(socket), output(filename)
+    explicit BPFDriver(const utils::Socket &socket, const std::string &filename) : sock(socket), output(filename)
     {
-        buf.data = new ui8[buf.allocSize];
+        buf.data = new u8[buf.allocSize];
     }
 
     ~BPFDriver()

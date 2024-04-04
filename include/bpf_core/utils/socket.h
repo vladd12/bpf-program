@@ -1,9 +1,9 @@
 #pragma once
 
-#include <bpf_core/utils.h>
+#include <bpf_core/utils/helpers.h>
 #include <sys/socket.h>
 
-namespace net
+namespace utils
 {
 
 /// \brief Class for wrapping the Linux sockets API.
@@ -39,14 +39,14 @@ public:
     /// \brief Blocking data reading from the socket to the buffer.
     /// \details The thread waits until the socket receive input data,
     /// and then begins reading data to the buffer.
-    void blockRead(util::Buffer &buf);
+    void blockRead(Buffer &buf);
 
     /// \brief Non-blocking data reading from the socket to the buffer.
     /// \details Checks that the socket has received input data.
     /// If the data is available, then they are read to the buffer.
     /// Otherwise, the CPU time of the thread is given to another process.
     /// \see isAvailable.
-    void nonBlockRead(util::Buffer &buf);
+    void nonBlockRead(Buffer &buf);
 };
 
 }
