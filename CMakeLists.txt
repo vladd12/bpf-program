@@ -45,7 +45,7 @@ set(bpf_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/fast_file.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/iec_parser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/utils.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/sock.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/socket.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/netdriver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/validator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/bpf_core/net/pcap-driver.h
@@ -57,7 +57,7 @@ set(bpf_core_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/fast_file.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/iec_parser.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/utils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/sock.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/socket.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/netdriver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/bpf_core/net/pcap-driver.cpp
@@ -74,7 +74,7 @@ add_library(bpf_core STATIC ${bpf_core_h} ${bpf_core_cpp})
 
 # Including directories for library
 target_include_directories(bpf_core PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include;${LIBBCC_LIBRARIES}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 # Linking libraries
@@ -99,7 +99,7 @@ if(BUILD_BENCHMARKS)
 endif()
 
 # Installing eBPF sources in directory with program
-set(BPF_SOURCE_DIR "${PROJECT_SOURCE_DIR}/bpf")
+set(BPF_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bpf")
 install(
   FILES ${BPF_SOURCE_DIR}/ethernet-parse.c
   DESTINATION ${CMAKE_BINARY_DIR}/bpf

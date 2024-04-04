@@ -2,14 +2,14 @@
 
 #include <bpf_core/fast_file.h>
 #include <bpf_core/iec_parser.h>
-#include <bpf_core/net/sock.h>
+#include <bpf_core/net/socket.h>
 #include <bpf_core/net/validator.h>
 #include <iostream>
 
 namespace net
 {
 
-class NetDriver
+class BPFDriver
 {
 private:
     util::Buffer buf;
@@ -19,19 +19,19 @@ private:
     Validator validator;
 
 public:
-    explicit NetDriver() = delete;
-    explicit NetDriver(const NetDriver &rhs) = delete;
-    explicit NetDriver(NetDriver &&rhs) = delete;
-    NetDriver &operator=(const NetDriver &rhs) = delete;
-    NetDriver &operator=(NetDriver &&rhs) = delete;
+    explicit BPFDriver() = delete;
+    explicit BPFDriver(const BPFDriver &rhs) = delete;
+    explicit BPFDriver(BPFDriver &&rhs) = delete;
+    BPFDriver &operator=(const BPFDriver &rhs) = delete;
+    BPFDriver &operator=(BPFDriver &&rhs) = delete;
 
-    explicit NetDriver(const Socket &socket, const std::string &filename)
+    explicit BPFDriver(const Socket &socket, const std::string &filename)
         : buf { nullptr, util::BUFFER_SIZE, 0 }, sock(socket), output(filename)
     {
         buf.data = new ui8[buf.allocSize];
     }
 
-    ~NetDriver()
+    ~BPFDriver()
     {
         delete[] buf.data;
         sock.closeSock();
