@@ -47,7 +47,7 @@ union DetailQual {
         u8 inconsistent : 1;
         u8 inaccurate : 1;
     } data;
-};
+} __attribute__((__packed__));
 
 /// \brief Data unit for transmitting the sample value and its quality.
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
@@ -77,7 +77,7 @@ union DataUnit {
     {
         return DetailQual { u8(data.bitset.data.dQual) };
     }
-};
+} __attribute__((__packed__));
 
 /// \brief Number of data units in the application sequence data unit.
 /// \details The sequence of data units always contains 4 data units
@@ -91,8 +91,8 @@ constexpr auto unitsPerASDU = 8;
 struct ASDU
 {
     u16 smpCnt;                  ///< Sample count.
-    u32 confRev;                 ///< Config revision.
     u8 smpSynch;                 ///< Sample synchronisation.
+    u32 confRev;                 ///< Config revision.
     DataUnit data[unitsPerASDU]; ///< Sequence of data.
 };
 

@@ -47,6 +47,7 @@ set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/iec_parser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/validator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/handlers/base_handler.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/code_formater.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/fast_file.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/helpers.h
