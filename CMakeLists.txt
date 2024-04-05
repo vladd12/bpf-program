@@ -39,16 +39,19 @@ endif()
 
 # Collecting sources of project
 set(iec_core_h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/base_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_exec.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/pcap_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/byte_op.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/iec_parser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/validator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/handlers/base_handler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/code_formater.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/fast_file.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/helpers.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/socket.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/value_exchange.h
 )
 set(iec_core_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_engine.cpp
