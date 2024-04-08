@@ -39,6 +39,7 @@ endif()
 
 # Collecting sources of project
 set(iec_core_h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/pipeline_builder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/base_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_exec.h

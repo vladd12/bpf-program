@@ -13,15 +13,25 @@ constexpr auto buffer_size = 8192;
 class BPFEngine final : public BaseEngine
 {
 private:
-    utils::StaticBuffer<buffer_size> buffer;
+    using Buffer = utils::StaticBuffer<buffer_size>;
+    using Socket = utils::Socket;
+    using Exchange = utils::ValueExchangeBlocking<Buffer>;
+
+    Buffer buffer;
     BPFExecutor executor;
-    utils::Socket socket;
+    Socket socket;
+    Exchange *exchange;
 
 public:
     explicit BPFEngine();
 
     bool setup(const EngineSettings &settings) override;
     void run() override;
+
+    void setExchange(Exchange &exchange_) noexcept
+    {
+        exchange = &exchange_;
+    }
 };
 
 } // namespace engines
