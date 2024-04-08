@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 # Project options
-option(BUILD_BENCHMARKS "Building benchmarks" ON)
+option(BUILD_BENCHMARKS "Building benchmarks" OFF)
 
 # Setting project build type, if not specified
 if(NOT CMAKE_BUILD_TYPE)
