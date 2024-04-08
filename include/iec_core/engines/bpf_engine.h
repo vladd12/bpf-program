@@ -2,50 +2,23 @@
 
 #include <iec_core/engines/base_engine.h>
 #include <iec_core/engines/bpf_exec.h>
-#include <iec_core/iec/iec_parser.h>
-#include <iec_core/iec/validator.h>
-#include <iec_core/utils/fast_file.h>
 #include <iec_core/utils/socket.h>
-#include <iostream>
+#include <iec_core/utils/value_exchange.h>
 
 namespace engines
 {
 
-class BPFEngine
+constexpr auto buffer_size = 8192;
+
+class BPFEngine final : public BaseEngine
 {
 private:
-    utils::Buffer buf;
-    utils::FastFile output;
-    utils::Socket sock;
-    iec::IecParser parser;
-    iec::Validator validator;
-
-    explicit BPFEngine(const std::string &filename);
-
-public:
-    explicit BPFEngine() = delete;
-    explicit BPFEngine(const BPFEngine &rhs) = delete;
-    explicit BPFEngine(BPFEngine &&rhs) = delete;
-    BPFEngine &operator=(const BPFEngine &rhs) = delete;
-    BPFEngine &operator=(BPFEngine &&rhs) = delete;
-
-    explicit BPFEngine(const utils::Socket &socket, const std::string &filename);
-    ~BPFEngine();
-
-    void run();
-};
-
-//////////////////////////////////////////////////////////////////
-
-class EBPFEngine final : public BaseEngine
-{
-private:
-    utils::StaticBuffer<8192> buffer;
+    utils::StaticBuffer<buffer_size> buffer;
     BPFExecutor executor;
-    int socket_fd;
+    utils::Socket socket;
 
 public:
-    explicit EBPFEngine();
+    explicit BPFEngine();
 
     bool setup(const EngineSettings &settings) override;
     void run() override;

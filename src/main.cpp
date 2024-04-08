@@ -18,27 +18,14 @@ void inputData(std::string &iface, std::string &srcMac, std::string &svID)
 
 int main()
 {
-    std::unique_ptr<BPFExecutor> bpf(new BPFExecutor("bpf/ethernet-parse.c"));
     std::string ifaceName = "enp0s8";          // enp0s8 - VM, eth0 - hardware
     std::string srcMacAddr = "0x0cefaf3042cc"; // 0x0cefaf3042cc - 80p, 0x0cefaf3042cd - 256p
     std::string svID = "ENS80pointMU01";       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
     // inputData(ifaceName, srcMacAddr, svID);
-    bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
-    // engines::PCAPEngine engine;
+    engines::BPFEngine engine;
+    if (engine.setup({ ifaceName, srcMacAddr, svID }))
+        engine.run();
 
-    auto status = bpf->load();
-    if (status.ok())
-    {
-        int sock = -1;
-        status = bpf->getDeviceSocket(sock, "iec61850_filter", ifaceName);
-        if (status.ok() && sock >= 0)
-        {
-            // test(sock);
-            auto driver = std::unique_ptr<engines::BPFEngine>(new engines::BPFEngine(utils::Socket(sock), "out.txt"));
-            driver->run();
-        }
-    }
-    std::cout << status.msg() << '\n';
     return 0;
 }

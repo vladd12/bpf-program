@@ -80,12 +80,12 @@ public:
         }
         // get value from storage and notify writer's thread
         std::lock_guard<std::mutex> locker { accessor };
-        value = storage;
+        value = std::move(storage);
         isFilled = false;
         waiter.notify_one();
     }
 
-    void set(T &value)
+    void set(T &&value)
     {
         // wait if already filled
         if (isFilled)
@@ -95,7 +95,7 @@ public:
         }
         // set new value to storage and notify reader's thread
         std::lock_guard<std::mutex> locker { accessor };
-        storage = value;
+        storage = std::move(value);
         isFilled = true;
         waiter.notify_one();
     }

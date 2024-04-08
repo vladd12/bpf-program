@@ -65,6 +65,13 @@ public:
         return size - written;
     }
 
+    /// \brief Reset some counters for buffer.
+    inline void reset() noexcept
+    {
+        offset = 0;
+        written = 0;
+    }
+
     /// \brief Returns a byte (u8) from the frame buffer.
     inline u8 readU8() noexcept
     {
