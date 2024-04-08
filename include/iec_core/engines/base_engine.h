@@ -16,12 +16,19 @@ class BaseHandler;
 
 class BaseEngine
 {
-private:
+protected:
+    bool running = true;
+
 public:
     explicit BaseEngine() = default;
 
-    virtual void setup(const EngineSettings &settings) = 0;
+    virtual bool setup(const EngineSettings &settings) = 0;
     virtual void run() = 0;
+
+    void stop() noexcept
+    {
+        running = false;
+    }
 };
 
 } // namespace engines

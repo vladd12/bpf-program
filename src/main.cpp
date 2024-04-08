@@ -25,10 +25,9 @@ int main()
     // inputData(ifaceName, srcMacAddr, svID);
     bpf->filterSourceCode(ifaceName, srcMacAddr, svID);
 
-    engines::PCAPEngine engine;
+    // engines::PCAPEngine engine;
 
-    /*
-    auto status = bpf->run();
+    auto status = bpf->load();
     if (status.ok())
     {
         int sock = -1;
@@ -36,11 +35,10 @@ int main()
         if (status.ok() && sock >= 0)
         {
             // test(sock);
-            auto driver = std::unique_ptr<net::NetDriver>(new net::NetDriver(net::Socket(sock), "out.txt"));
+            auto driver = std::unique_ptr<engines::BPFEngine>(new engines::BPFEngine(utils::Socket(sock), "out.txt"));
             driver->run();
         }
     }
-    util::printStatusMessage(status);
-    */
+    std::cout << status.msg() << '\n';
     return 0;
 }

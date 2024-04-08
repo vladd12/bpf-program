@@ -1,6 +1,5 @@
 #include "iec_core/engines/bpf_engine.h"
 
-#include <iec_core/engines/bpf_exec.h>
 #include <stdexcept>
 
 namespace engines
@@ -59,6 +58,32 @@ BPFEngine BPFEngine::create(const std::string_view &ifaceName, const std::string
             return BPFEngine(utils::Socket(sock), "out.txt");
     }
     throw std::runtime_error("Can't compile or load BPF program");
+}
+
+//////////////////////////////////////////////////////////////////
+
+EBPFEngine::EBPFEngine() : executor("bpf/ethernet-parse.c"), socket_fd(-1)
+{
+}
+
+bool EBPFEngine::setup(const EngineSettings &settings)
+{
+    executor.filterSourceCode(settings.iface.data(), settings.sourceMAC.data(), settings.svID.data());
+    auto status = executor.load();
+    if (status.ok())
+    {
+        status = executor.getDeviceSocket(socket_fd, "iec61850_filter", settings.iface.data());
+        if (status.ok() && socket_fd >= 0)
+            return true;
+    }
+    std::cout << status.msg() << '\n';
+    return false;
+}
+
+void EBPFEngine::run()
+{
+    utils::Socket socket(socket_fd);
+    running;
 }
 
 } // namespace engines

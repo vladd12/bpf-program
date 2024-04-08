@@ -1,4 +1,6 @@
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
 # Getting Google Benchmark sources from GitHub repository
 FetchContent_Declare(
     benchmark

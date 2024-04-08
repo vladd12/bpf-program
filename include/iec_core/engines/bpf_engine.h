@@ -1,12 +1,12 @@
 #pragma once
 
+#include <iec_core/engines/base_engine.h>
+#include <iec_core/engines/bpf_exec.h>
 #include <iec_core/iec/iec_parser.h>
 #include <iec_core/iec/validator.h>
 #include <iec_core/utils/fast_file.h>
 #include <iec_core/utils/socket.h>
 #include <iostream>
-
-class BPFExecutor;
 
 namespace engines
 {
@@ -36,6 +36,21 @@ public:
     void run();
 
     static BPFEngine create(const std::string_view &a, const std::string_view &b, const std::string_view &c);
+};
+
+//////////////////////////////////////////////////////////////////
+
+class EBPFEngine final : public BaseEngine
+{
+private:
+    BPFExecutor executor;
+    int socket_fd;
+
+public:
+    explicit EBPFEngine();
+
+    bool setup(const EngineSettings &settings) override;
+    void run() override;
 };
 
 } // namespace engines
