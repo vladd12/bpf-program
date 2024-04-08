@@ -43,6 +43,7 @@ public:
 class EBPFEngine final : public BaseEngine
 {
 private:
+    utils::StaticBuffer<8192> buffer;
     BPFExecutor executor;
     int socket_fd;
 

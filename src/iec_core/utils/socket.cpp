@@ -3,6 +3,7 @@
 #include <thread>
 
 // Linux
+#include <fcntl.h>
 #include <net/ethernet.h>
 #include <unistd.h>
 
@@ -78,6 +79,12 @@ void Socket::nonBlockRead(Buffer &buf)
         else
             std::this_thread::yield();
     }
+}
+
+bool Socket::setNonBlockingMode()
+{
+    auto flags = fcntl(sock_fd, F_GETFL);
+    return (fcntl(sock_fd, F_SETFL, flags | O_NONBLOCK) != 1);
 }
 
 }

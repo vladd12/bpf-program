@@ -83,7 +83,15 @@ bool EBPFEngine::setup(const EngineSettings &settings)
 void EBPFEngine::run()
 {
     utils::Socket socket(socket_fd);
-    running;
+    if (!socket.setNonBlockingMode())
+        std::cout << "Couldn't set non-blocking read mode for socket!\n";
+
+    while (running)
+    {
+        socket.readTo(buffer);
+        //        if (buffer.getSize() < 800)
+        //            ;
+    }
 }
 
 } // namespace engines

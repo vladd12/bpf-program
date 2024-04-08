@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iec_core/utils/buffer.h>
 #include <iec_core/utils/helpers.h>
 #include <sys/socket.h>
 
@@ -47,6 +48,16 @@ public:
     /// Otherwise, the CPU time of the thread is given to another process.
     /// \see isAvailable.
     void nonBlockRead(Buffer &buf);
+
+    bool setNonBlockingMode();
+
+    template <u64 size> //
+    void readTo(StaticBuffer<size> &buffer)
+    {
+        auto result = recvfrom(sock_fd, buffer.getFree(), buffer.getSize(), 0, nullptr, nullptr);
+        if (result > 0)
+            buffer.appendWritten(result);
+    }
 };
 
 }
