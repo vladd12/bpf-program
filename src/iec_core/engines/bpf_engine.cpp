@@ -15,11 +15,6 @@ BPFEngine::BPFEngine(const utils::Socket &socket, const std::string &filename) :
     sock = socket;
 }
 
-BPFEngine::BPFEngine(const BPFExecutor &executor, const std::string &filename) : BPFEngine(filename)
-{
-    (void)(executor);
-}
-
 BPFEngine::~BPFEngine()
 {
     delete[] buf.data;
@@ -45,24 +40,9 @@ void BPFEngine::run()
     }
 }
 
-BPFEngine BPFEngine::create(const std::string_view &ifaceName, const std::string_view &srcMacAddr, const std::string_view &svID)
-{
-    BPFExecutor executor("bpf/ethernet-parse.c");
-    executor.filterSourceCode(ifaceName.data(), srcMacAddr.data(), svID.data());
-    auto status = executor.load();
-    if (status.ok())
-    {
-        int sock = -1;
-        status = executor.getDeviceSocket(sock, "iec61850_filter", ifaceName.data());
-        if (status.ok() && sock >= 0)
-            return BPFEngine(utils::Socket(sock), "out.txt");
-    }
-    throw std::runtime_error("Can't compile or load BPF program");
-}
-
 //////////////////////////////////////////////////////////////////
 
-EBPFEngine::EBPFEngine() : executor("bpf/ethernet-parse.c"), socket_fd(-1)
+EBPFEngine::EBPFEngine() : BaseEngine(), executor("bpf/ethernet-parse.c"), socket_fd(-1)
 {
 }
 

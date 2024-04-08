@@ -55,7 +55,7 @@ union DataUnit {
     u64 _data;
     struct __attribute__((__packed__))
     {
-        u32 instMagI;
+        i32 instMagI;
         u16 quality;
         union bitfield {
             u16 _data;

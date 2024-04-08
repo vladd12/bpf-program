@@ -30,12 +30,9 @@ public:
     BPFEngine &operator=(BPFEngine &&rhs) = delete;
 
     explicit BPFEngine(const utils::Socket &socket, const std::string &filename);
-    explicit BPFEngine(const BPFExecutor &executor, const std::string &filename);
     ~BPFEngine();
 
     void run();
-
-    static BPFEngine create(const std::string_view &a, const std::string_view &b, const std::string_view &c);
 };
 
 //////////////////////////////////////////////////////////////////
