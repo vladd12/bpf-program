@@ -2,6 +2,8 @@
 
 #include <array>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <optional>
 
 namespace utils
@@ -52,6 +54,50 @@ public:
         }
         else
             return false;
+    }
+};
+
+/// \brief Value-exchange data structure with mutex blocking.
+template <typename T> //
+struct ValueExchangeBlocking
+{
+private:
+    T storage;
+    std::mutex accessor;
+    std::condition_variable waiter;
+    bool isFilled = false;
+
+public:
+    explicit ValueExchangeBlocking() = default;
+
+    void get(T &value)
+    {
+        // wait if not filled yet
+        if (!isFilled)
+        {
+            std::unique_lock<std::mutex> locker { accessor };
+            waiter.wait(locker, [this] { return isFilled; });
+        }
+        // get value from storage and notify writer's thread
+        std::lock_guard<std::mutex> locker { accessor };
+        value = storage;
+        isFilled = false;
+        waiter.notify_one();
+    }
+
+    void set(T &value)
+    {
+        // wait if already filled
+        if (isFilled)
+        {
+            std::unique_lock<std::mutex> locker { accessor };
+            waiter.wait(locker, [this] { return !isFilled; });
+        }
+        // set new value to storage and notify reader's thread
+        std::lock_guard<std::mutex> locker { accessor };
+        storage = value;
+        isFilled = true;
+        waiter.notify_one();
     }
 };
 
