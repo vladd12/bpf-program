@@ -6,29 +6,29 @@
 namespace utils
 {
 
-struct StaticBuffer
+/// \brief Class for using static memory buffer.
+template <std::size_t size> //
+struct StaticBuffer final
 {
+    friend struct StaticBufferRef;
+
 public:
     using value_type = u8;
     using size_type = std::size_t;
     using pointer = value_type *;
-    using const_pointer = const value_type *;
 
 private:
-    static constexpr inline size_type size = 2048;
-
     value_type data[size];
     size_type offset = 0;
+    size_type written = 0;
 
 public:
-    /// \brief Applying offset to the data pointer (to the frame buffer) and current the byte sequence size.
-    /// \details Used when reading from the frame buffer occurs.
-    bool apply(size_type offset_)
-    {
-        offset += offset_;
-    }
+    inline explicit StaticBuffer() noexcept = default;
 
-    pointer get() noexcept
+    /// \brief Returns pointer to the data with using current offset.
+    /// \details If the current offset more than size of
+    /// the data array, function returns nullptr.
+    inline pointer get() noexcept
     {
         if (offset < size)
             return (&data[0] + offset);
@@ -36,14 +36,37 @@ public:
             return nullptr;
     }
 
+    /// \brief Returns pointer to the data with using written offset.
+    /// \details If the written offset more than size of
+    /// the data array, function returns nullptr.
+    inline pointer getFree() noexcept
+    {
+        if (written < size)
+            return (&data[0] + written);
+        else
+            return nullptr;
+    }
+
+    /// \brief Append to the current offset some length.
+    inline void appendOffset(size_type length) noexcept
+    {
+        offset += length;
+    }
+
+    /// \brief Append to the written offset some length.
+    inline void appendWritten(size_type length) noexcept
+    {
+        written += length;
+    }
+
     /// \brief Returns a byte (u8) from the frame buffer.
-    u8 readU8()
+    inline u8 readU8() noexcept
     {
         return read<u8>();
     }
 
     /// \brief Returns a word (u16) from the frame buffer.
-    u16 readU16()
+    inline u16 readU16() noexcept
     {
         auto _word = read<u16>();
         if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -52,7 +75,7 @@ public:
     }
 
     /// \brief Returns a double word (u32) from the frame buffer.
-    u32 readU32()
+    inline u32 readU32() noexcept
     {
         auto _dword = read<u32>();
         if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -61,7 +84,7 @@ public:
     }
 
     /// \brief Returns a quadro word (u64) from the frame buffer.
-    u64 readU64()
+    inline u64 readU64() noexcept
     {
         auto _qword = read<u64>();
         if constexpr (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -71,7 +94,7 @@ public:
 
     /// \brief Returns object with specified type from the frame buffer.
     template <typename T> //
-    T read()
+    inline T read() noexcept
     {
         T value {};
         constexpr auto count = sizeof(T);
@@ -81,8 +104,27 @@ public:
             auto srcBegin = reinterpret_cast<const u8 *>(get());
             std::copy_n(srcBegin, count, dstBegin);
         }
-        offset += count;
+        appendOffset(count);
         return value;
+    }
+};
+
+/// TODO?
+struct StaticBufferRef
+{
+public:
+    using value_type = u8;
+    using size_type = std::size_t;
+    using pointer = value_type *;
+
+private:
+    pointer data;
+    size_type size, offset;
+
+public:
+    template <std::size_t size> //
+    explicit StaticBufferRef(StaticBuffer<size> &buffer, size_type size_) noexcept : data(buffer.get()), size(size_), offset(0)
+    {
     }
 };
 
