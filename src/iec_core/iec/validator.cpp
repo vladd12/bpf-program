@@ -6,30 +6,30 @@ namespace iec
 {
 
 Validator::Validator() noexcept
-    : value(0), state(State::Initial), strategy(Strategy::ThrowException), missedCount(0), capturedCount(0)
+    : capturedSmpSync(0), state(State::Initial), strategy(Strategy::ThrowException), missedCount(0), capturedCount(0)
 {
 }
 
-void Validator::validate(const u16 svID)
+void Validator::validate(const u16 smpSync)
 {
     if (state == State::Initial)
         state = State::Correct;
     else
     {
-        if (svID == min && (value == max80p || value == max256p))
+        if (smpSync == min && (capturedSmpSync == max80p || capturedSmpSync == max256p))
             state = State::Correct;
-        else if ((svID - 1) == value)
+        else if ((smpSync - 1) == capturedSmpSync)
             state = State::Correct;
         // missed packet
         else
         {
-            printf("Prev: %04X\nCurrent: %04X\nWait: %04X\n", value, svID, value + 1);
+            printf("Prev: %04X\nCurrent: %04X\nWait: %04X\n", capturedSmpSync, smpSync, capturedSmpSync + 1);
             state = State::Incorrect;
             if (strategy == Strategy::ThrowException)
                 throw std::runtime_error("Packet missed");
             else if (strategy == Strategy::Statistics)
             {
-                auto missed = svID - (value + 1);
+                auto missed = smpSync - (capturedSmpSync + 1);
                 printf("Missed: %d\n", missed);
                 missedCount += missed;
             }
@@ -37,7 +37,7 @@ void Validator::validate(const u16 svID)
     }
     if (strategy == Strategy::Statistics)
         ++capturedCount;
-    value = svID;
+    capturedSmpSync = smpSync;
 }
 
 void Validator::setStrategy(Strategy newStrategy) noexcept
@@ -52,7 +52,7 @@ void Validator::update(const std::vector<ASDU> &sequnce)
         for (const auto &asdu : sequnce)
         {
             const auto newVal = asdu.smpCnt;
-            // printf("Value: %04X\n", newVal);
+            printf("Value: %04X\n", newVal);
             validate(newVal);
         }
     }

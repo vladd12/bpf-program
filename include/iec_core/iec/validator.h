@@ -29,7 +29,7 @@ private:
     static constexpr u16 max80p = 3999;   ///< Maximum value of the sample value count for 80 points per period.
     static constexpr u16 max256p = 12799; ///< Maximum value of the sample value count for 256 points per period.
 
-    u16 value;
+    u16 capturedSmpSync;
     State state;
     Strategy strategy;
 
@@ -38,7 +38,7 @@ private:
     /// greater than the specified difference, then the validator state changes to incorrect.
     /// Otherwise, the validator state changes to correct. Checking are performed taking
     /// into consideration the boundary values.
-    void validate(const u16 svID);
+    void validate(const u16 smpSync);
 
 public:
     u32 missedCount;
