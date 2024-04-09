@@ -224,7 +224,8 @@ private:
         if (svIdLength < 10 || svIdLength > 34)
             return false;
         buffer.appendOffset(svIdLength);
-        asduLength = asduLength - (sizeof(svId) + sizeof(svIdLength) + svIdLength);
+        internalFrameLength -= svIdLength;
+        asduLength -= (sizeof(svId) + sizeof(svIdLength) + svIdLength);
 
         // reading smpCnt
         auto smpCntId = buffer.readU8();
@@ -238,7 +239,7 @@ private:
         auto smpCnt = buffer.readU16();
         internalFrameLength -= sizeof(smpCnt);
         asdu.smpCnt = smpCnt;
-        asduLength = asduLength - (sizeof(smpCntId) + sizeof(smpCntLen) + sizeof(smpCnt));
+        asduLength -= (sizeof(smpCntId) + sizeof(smpCntLen) + sizeof(smpCnt));
 
         // reading confRev
         auto confRevId = buffer.readU8();
@@ -252,7 +253,7 @@ private:
         auto confRev = buffer.readU32();
         internalFrameLength -= sizeof(confRev);
         asdu.confRev = confRev;
-        asduLength = asduLength - (sizeof(confRevId) + sizeof(confRevLen) + sizeof(confRev));
+        asduLength -= (sizeof(confRevId) + sizeof(confRevLen) + sizeof(confRev));
 
         // reading smpSynch
         auto smpSyncId = buffer.readU8();
@@ -266,7 +267,7 @@ private:
         auto smpSync = buffer.readU8();
         --internalFrameLength;
         asdu.smpSynch = smpSync;
-        asduLength = asduLength - (sizeof(smpSyncId) + sizeof(smpSyncLen) + sizeof(smpSync));
+        asduLength -= (sizeof(smpSyncId) + sizeof(smpSyncLen) + sizeof(smpSync));
 
         // reading sequence of data
         auto datasetId = buffer.readU8();
@@ -279,8 +280,10 @@ private:
         if (datasetLen != assumeLen)
             return false;
         memcpy(&asdu.data[0], buffer.get(), assumeLen);
+        sequence.push_back(std::move(asdu));
         buffer.appendOffset(assumeLen);
-        asduLength = asduLength - (sizeof(datasetId) + sizeof(datasetLen) + datasetLen);
+        internalFrameLength -= assumeLen;
+        asduLength -= (sizeof(datasetId) + sizeof(datasetLen) + datasetLen);
         if (asduLength != 0)
             return false;
         return true;

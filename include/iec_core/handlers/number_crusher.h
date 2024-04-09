@@ -19,10 +19,12 @@ public:
     using Buffer = utils::StaticBuffer<buffer_size>;
     using Exchange = utils::ValueExchangeBlocking<Buffer>;
     using Parser = iec::IecParser;
+    using Validator = iec::Validator;
 
 private:
     Buffer buffer;
     Parser parser;
+    Validator validator;
     Exchange *exchange;
 
 public:
@@ -32,7 +34,9 @@ public:
     {
         while (running)
         {
-            ;
+            exchange->get(buffer);
+            auto sequence { parser.parse(buffer) };
+            validator.update(sequence);
         }
     }
 

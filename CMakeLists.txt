@@ -79,6 +79,12 @@ target_include_directories(iec_core PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include;${LIBBCC_LIBRARIES}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
+# Finding pthread library
+if(UNIX)
+  find_package(Threads REQUIRED)
+  target_link_libraries(iec_core PRIVATE Threads::Threads)
+endif()
+
 # Linking libraries
 target_link_libraries(iec_core PUBLIC ${LIBBCC_LIBRARIES} ${LIBPCAP_LIBRARIES})
 target_include_directories(iec_core PUBLIC ${LIBBCC_INCLUDE_DIR} ${LIBPCAP_INCLUDE_DIR})

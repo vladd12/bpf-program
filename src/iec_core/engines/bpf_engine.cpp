@@ -42,21 +42,4 @@ void BPFEngine::run()
     }
 }
 
-// void BPFEngine::run()
-//{
-//    while (true)
-//    {
-//        sock.nonBlockRead(buf);
-//        if (parser.update(buf.data, buf.readSize))
-//        {
-//            auto sequence = parser.parse();
-//            validator.update(sequence);
-//            auto curr = sequence.data[0].smpCnt;
-//            printf("Count: %04X\n", curr);
-//            if (sequence.data != nullptr)
-//                delete[] sequence.data;
-//        }
-//    }
-//}
-
 } // namespace engines
