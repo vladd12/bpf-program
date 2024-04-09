@@ -126,17 +126,16 @@ void PacketCounter::readInTime(std::chrono::milliseconds time, TargetSocket targ
 
         if (status)
         {
-            if (parser.update(buf.data, buf.readSize))
-            {
-                auto sequence = parser.parse();
-                validator.update(sequence);
-
-                // auto curr = sequence.data[0].smpCnt;
-                // printf("Count: %04X\n", curr);
-
-                if (sequence.data != nullptr)
-                    delete[] sequence.data;
-            }
+            /// TODO: rewrite with new classes
+            //            if (parser.update(buf.data, buf.readSize))
+            //            {
+            //                auto sequence = parser.parse();
+            //                validator.update(sequence);
+            //                // auto curr = sequence.data[0].smpCnt;
+            //                // printf("Count: %04X\n", curr);
+            //                if (sequence.data != nullptr)
+            //                    delete[] sequence.data;
+            //            }
         }
 
         elapsed_time = duration_cast<nanoseconds>(high_resolution_clock::now() - start_time);
@@ -154,15 +153,16 @@ void PacketCounter::readPacketsNative(std::uint64_t numOfPackets)
         nativeSock.nonBlockRead(buf);
         if (nativeFilter(buf.data, buf.readSize))
         {
-            if (parser.update(buf.data, buf.readSize))
-            {
-                auto sequence = parser.parse();
-                // auto curr = sequence.data[0].smpCnt;
-                // printf("Count: %04X\n", curr);
-                validator.update(sequence);
-                if (sequence.data != nullptr)
-                    delete[] sequence.data;
-            }
+            /// TODO: rewrite with new classes
+            //            if (parser.update(buf.data, buf.readSize))
+            //            {
+            //                auto sequence = parser.parse();
+            //                // auto curr = sequence.data[0].smpCnt;
+            //                // printf("Count: %04X\n", curr);
+            //                validator.update(sequence);
+            //                if (sequence.data != nullptr)
+            //                    delete[] sequence.data;
+            //            }
         }
     }
     printStatistic();
@@ -176,15 +176,16 @@ void PacketCounter::readPacketsBpf(std::uint64_t numOfPackets)
         bpfSock.nonBlockRead(buf);
         if (bpfFilter(buf.data, buf.readSize))
         {
-            if (parser.update(buf.data, buf.readSize))
-            {
-                auto sequence = parser.parse();
-                auto curr = sequence.data[0].smpCnt;
-                printf("Count: %04X\n", curr);
-                validator.update(sequence);
-                if (sequence.data != nullptr)
-                    delete[] sequence.data;
-            }
+            /// TODO: rewrite with new classes
+            //            if (parser.update(buf.data, buf.readSize))
+            //            {
+            //                auto sequence = parser.parse();
+            //                auto curr = sequence.data[0].smpCnt;
+            //                printf("Count: %04X\n", curr);
+            //                validator.update(sequence);
+            //                if (sequence.data != nullptr)
+            //                    delete[] sequence.data;
+            //            }
         }
     }
     printStatistic();

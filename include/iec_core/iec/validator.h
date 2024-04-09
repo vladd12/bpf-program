@@ -38,7 +38,7 @@ private:
     /// greater than the specified difference, then the validator state changes to incorrect.
     /// Otherwise, the validator state changes to correct. Checking are performed taking
     /// into consideration the boundary values.
-    void validate(const u16 svID, const u8 count);
+    void validate(const u16 svID);
 
 public:
     u32 missedCount;
@@ -50,7 +50,7 @@ public:
     void setStrategy(Strategy newStrategy) noexcept;
 
     /// \brief Updating validator state by the sequnce of ASDU given by IecParser.
-    void update(const iec::SeqASDU &sequnce);
+    void update(const std::vector<iec::ASDU> &sequnce);
 
     /// \brief Reset a validator's state and packet counters.
     void reset() noexcept;

@@ -65,6 +65,12 @@ public:
         return offset;
     }
 
+    /// \brief Returns offset.
+    inline size_type getWritten() const noexcept
+    {
+        return written;
+    }
+
     /// \brief Returns free size.
     inline size_type getFreeSize() const noexcept
     {

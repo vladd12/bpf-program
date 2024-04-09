@@ -61,7 +61,6 @@ set(iec_core_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_exec.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/pcap_engine.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/byte_op.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/iec_parser.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/code_formater.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/fast_file.cpp
