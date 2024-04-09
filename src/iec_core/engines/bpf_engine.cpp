@@ -34,8 +34,11 @@ void BPFEngine::run()
     while (running)
     {
         socket.readTo(buffer);
-        //        if (buffer.getSize() < 800)
-        //            ;
+        if (buffer.getFreeSize() < 800)
+        {
+            exchange->set(std::move(buffer));
+            buffer.reset();
+        }
     }
 }
 

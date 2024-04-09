@@ -3,16 +3,27 @@
 #include <iec_core/handlers/base_handler.h>
 #include <iec_core/iec/iec_parser.h>
 #include <iec_core/iec/validator.h>
+#include <iec_core/utils/buffer.h>
 #include <iec_core/utils/fast_file.h>
+#include <iec_core/utils/value_exchange.h>
 
 namespace handlers
 {
 
-template <typename Exchange> //
+constexpr auto buffer_size = 8192;
+
 class NumberCrusher final : public BaseHandler
 {
+public:
+    // Types
+    using Buffer = utils::StaticBuffer<buffer_size>;
+    using Exchange = utils::ValueExchangeBlocking<Buffer>;
+    using Parser = iec::IecParser;
+
 private:
-    iec::IecParser parser;
+    Buffer buffer;
+    Parser parser;
+    Exchange *exchange;
 
 public:
     explicit NumberCrusher() = default;
@@ -23,6 +34,11 @@ public:
         {
             ;
         }
+    }
+
+    void setExchange(Exchange &exchange_) noexcept
+    {
+        exchange = &exchange_;
     }
 };
 

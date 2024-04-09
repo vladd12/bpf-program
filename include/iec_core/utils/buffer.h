@@ -59,8 +59,14 @@ public:
         written += length;
     }
 
+    /// \brief Returns offset.
+    inline size_type getOffset() const noexcept
+    {
+        return offset;
+    }
+
     /// \brief Returns free size.
-    inline size_type getSize() const noexcept
+    inline size_type getFreeSize() const noexcept
     {
         return size - written;
     }

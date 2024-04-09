@@ -12,11 +12,13 @@ constexpr auto buffer_size = 8192;
 
 class BPFEngine final : public BaseEngine
 {
-private:
+public:
+    // Types
     using Buffer = utils::StaticBuffer<buffer_size>;
     using Socket = utils::Socket;
     using Exchange = utils::ValueExchangeBlocking<Buffer>;
 
+private:
     Buffer buffer;
     BPFExecutor executor;
     Socket socket;

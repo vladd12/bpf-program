@@ -54,7 +54,7 @@ public:
     template <u64 size> //
     void readTo(StaticBuffer<size> &buffer)
     {
-        auto result = recvfrom(sock_fd, buffer.getFree(), buffer.getSize(), 0, nullptr, nullptr);
+        auto result = recvfrom(sock_fd, buffer.getFree(), buffer.getFreeSize(), 0, nullptr, nullptr);
         if (result > 0)
             buffer.appendWritten(result);
     }
