@@ -20,7 +20,7 @@ void Validator::validate(const u16 smpSync)
             state = State::Correct;
         else if ((smpSync - 1) == capturedSmpSync)
             state = State::Correct;
-        // missed packet
+        // missed one packet or more
         else
         {
             printf("Prev: %04X\nCurrent: %04X\nWait: %04X\n", capturedSmpSync, smpSync, capturedSmpSync + 1);
@@ -52,7 +52,7 @@ void Validator::update(const std::vector<ASDU> &sequnce)
         for (const auto &asdu : sequnce)
         {
             const auto newVal = asdu.smpCnt;
-            printf("Value: %04X\n", newVal);
+            // printf("Value: %04X\n", newVal);
             validate(newVal);
         }
     }
