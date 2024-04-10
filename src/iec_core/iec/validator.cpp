@@ -45,11 +45,11 @@ void Validator::setStrategy(Strategy newStrategy) noexcept
     strategy = newStrategy;
 }
 
-void Validator::update(const std::vector<ASDU> &sequnce)
+void Validator::update(const std::vector<ASDU> &sequence)
 {
-    if (!sequnce.empty())
+    if (!sequence.empty())
     {
-        for (const auto &asdu : sequnce)
+        for (const auto &asdu : sequence)
         {
             const auto newVal = asdu.smpCnt;
             // printf("Value: %i\n", asdu.data[0].data.instMagI);

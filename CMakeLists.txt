@@ -38,6 +38,7 @@ set(iec_core_h
 set(iec_core_cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/byte_op.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/validator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/handlers/number_crusher.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/code_formater.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/fast_file.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/helpers.cpp
