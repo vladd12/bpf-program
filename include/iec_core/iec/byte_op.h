@@ -15,17 +15,20 @@ using u32 = std::uint32_t;
 using i64 = std::int64_t;
 using u64 = std::uint64_t;
 
-namespace details
+using f32 = float;
+using f64 = double;
+
+static_assert(sizeof(f64) / sizeof(f32) == 2, "Broken float point data types");
+
+namespace hardware
 {
 #ifdef __cpp_lib_hardware_interference_size
-using std::hardware_constructive_interference_size;
-using std::hardware_destructive_interference_size;
+inline constexpr std::size_t cache_line_size = std::hardware_constructive_interference_size;
 #else
 // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
-constexpr std::size_t hardware_constructive_interference_size = 64;
-constexpr std::size_t hardware_destructive_interference_size = 64;
+inline constexpr std::size_t cache_line_size = 64;
 #endif
-} // namespace details
+} // namespace hardware
 
 namespace bytes
 {

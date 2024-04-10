@@ -52,7 +52,7 @@ void Validator::update(const std::vector<ASDU> &sequnce)
         for (const auto &asdu : sequnce)
         {
             const auto newVal = asdu.smpCnt;
-            // printf("Value: %04X\n", newVal);
+            // printf("Value: %i\n", asdu.data[0].data.instMagI);
             validate(newVal);
         }
     }

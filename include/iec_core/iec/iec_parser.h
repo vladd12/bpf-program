@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <iec_core/utils/buffer.h>
 #include <net/ethernet.h>
 
@@ -91,10 +92,16 @@ constexpr auto unitsPerASDU = 8;
 /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
 struct ASDU
 {
-    u16 smpCnt;                  ///< Sample count.
-    u8 smpSynch;                 ///< Sample synchronisation.
-    u32 confRev;                 ///< Config revision.
-    DataUnit data[unitsPerASDU]; ///< Sequence of data.
+    u16 smpCnt;                              ///< Sample count.
+    u8 smpSynch;                             ///< Sample synchronisation.
+    u32 confRev;                             ///< Config revision.
+    std::array<DataUnit, unitsPerASDU> data; ///< Sequence of data.
+};
+
+/// \brief Real representation for ASDU's data unit.
+struct Point
+{
+    std::array<f32, unitsPerASDU> values;
 };
 
 /// \brief Class for parsing IEC-61850-9-2 SV LE frames.
@@ -104,11 +111,15 @@ private:
     std::vector<ASDU> sequence;
     u16 internalFrameLength;
 
+    /// \brief Verifying size of the byte sequence.
     inline bool verify(const u16 assumedLength) const noexcept
     {
         return internalFrameLength == assumedLength;
     }
 
+    /// \brief Parses the length of data in ASN format from the
+    /// frame buffer and returns its integer representation.
+    /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
     template <std::size_t size> //
     inline u32 parseAsnLength(utils::StaticBuffer<size> &buffer)
     {
@@ -134,6 +145,8 @@ private:
             return firstByte;
     }
 
+    /// \brief Parses the protocol data unit of frame.
+    /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
     template <std::size_t size> //
     inline bool parsePDU(utils::StaticBuffer<size> &buffer)
     {
@@ -169,6 +182,8 @@ private:
         return parseSequence(seqCount, buffer);
     }
 
+    /// \brief Parses the sequence of ASDU from the frame buffer.
+    /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
     template <std::size_t size> //
     inline bool parseSequence(const u8 seqCount, utils::StaticBuffer<size> &buffer)
     {
@@ -193,6 +208,8 @@ private:
         return true;
     }
 
+    /// \brief Parses the ASDU from the frame buffer.
+    /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
     template <std::size_t size> //
     inline bool parseASDU(utils::StaticBuffer<size> &buffer)
     {
@@ -276,17 +293,32 @@ private:
             return false;
         auto datasetLen = buffer.readU8();
         --internalFrameLength;
+        asduLength -= (sizeof(datasetId) + sizeof(datasetLen));
         constexpr auto assumeLen = sizeof(DataUnit) * unitsPerASDU;
         if (datasetLen != assumeLen)
             return false;
-        memcpy(&asdu.data[0], buffer.get(), assumeLen);
+
+        // reading data units of ASDU
+        for (auto i = 0; i < unitsPerASDU; ++i)
+            parseDataUnit(asdu.data[i], buffer);
         sequence.push_back(std::move(asdu));
-        buffer.appendOffset(assumeLen);
-        internalFrameLength -= assumeLen;
-        asduLength -= (sizeof(datasetId) + sizeof(datasetLen) + datasetLen);
+        asduLength -= datasetLen;
         if (asduLength != 0)
             return false;
         return true;
+    }
+
+    /// \brief Parses the ASDU's data unit from the frame buffer.
+    /// \see IEC-61850-9-2 Sample Values Light Edition frame format.
+    template <std::size_t size> //
+    inline void parseDataUnit(DataUnit &unit, utils::StaticBuffer<size> &buffer)
+    {
+        unit.data.instMagI = static_cast<i32>(buffer.readU32());
+        internalFrameLength -= sizeof(unit.data.instMagI);
+        unit.data.quality = buffer.readU16();
+        internalFrameLength -= sizeof(unit.data.quality);
+        unit.data.bitset._data = buffer.readU16();
+        internalFrameLength -= sizeof(unit.data.bitset._data);
     }
 
 public:
@@ -294,6 +326,7 @@ public:
     {
     }
 
+    /// \brief Returns the sequence of ASDU, parsed from the frame buffer.
     template <std::size_t size> //
     inline std::vector<ASDU> parse(utils::StaticBuffer<size> &buffer)
     {
@@ -304,6 +337,26 @@ public:
             parsePDU(buffer);
         }
         return std::vector<ASDU> { std::move(sequence) };
+    }
+
+    /// \brief Returns the real representation of the ASDU sequence, parsed from the frame buffer.
+    inline std::vector<Point> convert(const std::vector<ASDU> &sequence_)
+    {
+        constexpr f32 ampScaleFactor = 0.001f;
+        constexpr f32 volScaleFactor = 0.01f;
+        Point point {};
+        std::vector<Point> points;
+        points.reserve(sequence_.size());
+        for (const auto &asdu : sequence_)
+        {
+            for (auto i = 0; i < unitsPerASDU; ++i)
+            {
+                const auto scaleFactor = ((i < unitsPerASDU / 2) ? ampScaleFactor : volScaleFactor);
+                point.values[i] = static_cast<f32>(asdu.data[i].data.instMagI) * scaleFactor;
+            }
+            points.push_back(std::move(point));
+        }
+        return points;
     }
 };
 

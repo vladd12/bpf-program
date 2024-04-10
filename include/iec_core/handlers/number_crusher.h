@@ -37,6 +37,7 @@ public:
             exchange->get(buffer);
             auto sequence { parser.parse(buffer) };
             validator.update(sequence);
+            [[maybe_unused]] auto points { parser.convert(sequence) };
         }
     }
 
