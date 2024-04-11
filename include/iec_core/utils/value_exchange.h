@@ -65,10 +65,12 @@ private:
     T storage;
     std::mutex accessor;
     std::condition_variable waiter;
-    bool isFilled = false;
+    bool isFilled;
 
 public:
-    explicit ValueExchangeBlocking() = default;
+    explicit ValueExchangeBlocking() : isFilled(false)
+    {
+    }
 
     void get(T &value)
     {
@@ -98,6 +100,14 @@ public:
         storage = std::move(value);
         isFilled = true;
         waiter.notify_one();
+    }
+
+    void reset()
+    {
+        isFilled = true;
+        waiter.notify_one(); // notify reader's thread
+        isFilled = false;
+        waiter.notify_one(); // notify writer's thread
     }
 };
 

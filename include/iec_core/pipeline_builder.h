@@ -14,8 +14,8 @@ class PipelineBuilder
     engines::BPFEngine engine;
     handlers::NumberCrusher handler;
     engines::BPFEngine::Exchange exchange;
-    std::unique_ptr<std::thread> engineThread;
-    std::unique_ptr<std::thread> handlerThread;
+    std::thread engineThread;
+    std::thread handlerThread;
 
 public:
     explicit PipelineBuilder() = default;
@@ -26,22 +26,24 @@ public:
         {
             engine.setExchange(exchange);
             handler.setExchange(exchange);
-            engineThread.reset(new std::thread([this] { engine.run(); }));
-            handlerThread.reset(new std::thread([this] { handler.run(); }));
+            engineThread = std::thread([this] { engine.run(); });
+            handlerThread = std::thread([this] { handler.run(); });
         }
     }
 
     void wait()
     {
-        engineThread->join();
-        handlerThread->join();
+        if (engineThread.joinable())
+            engineThread.join();
+        if (handlerThread.joinable())
+            handlerThread.join();
     }
 
     void stop()
     {
         engine.stop();
         handler.stop();
-        exchange.set(engines::BPFEngine::Buffer {});
+        exchange.reset();
         wait();
     }
 };
