@@ -28,10 +28,14 @@ void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
     static std::size_t count = 1;
 
     constexpr auto size = iec::unitsPerASDU;
+    constexpr auto f32min = std::numeric_limits<f32>::min();
+    constexpr auto f32max = std::numeric_limits<f32>::max();
+    constexpr auto u64max = std::numeric_limits<u64>::max();
+
     // определяем минимальные и максимальные значения всех сигналов
     std::array<f32, size> minArray, maxArray;
-    minArray.fill(std::numeric_limits<f32>::max());
-    maxArray.fill(std::numeric_limits<f32>::min());
+    minArray.fill(f32max);
+    maxArray.fill(f32min);
     for (auto &point : points)
     {
         for (auto index = 0; index < size; ++index)
@@ -42,8 +46,8 @@ void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
     }
 
     // выбор наибольшего из сигналов по размаху для синхронизации
-    f32 magnitude = std::numeric_limits<f32>::min();
-    [[maybe_unused]] std::size_t selected = 0;
+    f32 magnitude = f32min;
+    std::size_t selected = 0;
     std::array<f32, size> adcMid;
     for (auto index = 0; index < size; ++index)
     {
@@ -56,17 +60,29 @@ void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
         adcMid[index] = (maxArray[index] + minArray[index]) / 2;
     }
 
-    /// TODO
-    //    // определяем знак сигнала в первой точке
-    //    i8 sign = (points[0].values[selected] >= 0) ? 1 : -1;
-    //    for (std::size_t index = 0; index < points.size(); ++index)
-    //    {
-    //        auto position = points[index].values[selected] - adcMid[selected];
-    //        if (position * sign < 0)
-    //        {
-    //            ;
-    //        }
-    //    }
+    // определяем знак сигнала в первой точке
+    i8 sign = (points[0].values[selected] - adcMid[selected] < 0) ? -1 : 1;
+    std::array<u64, 3> periods { u64max, u64max, u64max };
+    std::size_t period_index = 0;
+    for (std::size_t index = 1; index < points.size(); ++index)
+    {
+        // находим переходы через ноль
+        auto position = points[index].values[selected] - adcMid[selected];
+        if (position * sign < 0)
+        {
+            periods[period_index] = index;
+            ++period_index;
+            if (period_index == 3)
+                break;
+        }
+    }
+
+    if (periods[0] == u64max)
+        return;
+    if (periods[1] == u64max)
+        return;
+    if (periods[2] == u64max)
+        return;
 
     printf("Step: %lu\t\tNum points: %lu\n", count, points.size());
     printf("Mins:\nIA: %f\nIB: %f\nIC: %f\nIN: %f\n", minArray[0], minArray[1], minArray[2], minArray[3]);

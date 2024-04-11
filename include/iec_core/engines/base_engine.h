@@ -12,8 +12,6 @@ struct EngineSettings
     std::string_view svID;      // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
 };
 
-class BaseHandler;
-
 class BaseEngine
 {
 protected:
