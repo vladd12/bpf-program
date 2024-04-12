@@ -34,8 +34,6 @@ void NumberCrusher::setExchange(Exchange &exchange_) noexcept
 void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
 {
     static std::size_t count = 1;
-
-    // temp
     constexpr auto size = iec::unitsPerASDU;
 
     // определяем минимальные и максимальные значения всех сигналов

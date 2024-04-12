@@ -23,6 +23,7 @@ option(BUILD_PCAP_ENGINE "Building pcap engine" ON)
 set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/pipeline_builder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/base_engine.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/native_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/byte_op.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/iec_parser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/validator.h
@@ -36,6 +37,7 @@ set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/value_exchange.h
 )
 set(iec_core_cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/native_engine.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/byte_op.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/handlers/number_crusher.cpp
