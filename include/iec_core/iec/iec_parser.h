@@ -340,23 +340,22 @@ public:
     }
 
     /// \brief Returns the real representation of the ASDU sequence, parsed from the frame buffer.
-    inline std::vector<Point> convert(const std::vector<ASDU> &sequence_)
+    inline void convert(const std::vector<ASDU> &from, std::vector<Point> &to)
     {
         constexpr f32 ampScaleFactor = 0.001f;
         constexpr f32 volScaleFactor = 0.01f;
         Point point {};
-        std::vector<Point> points;
-        points.reserve(sequence_.size());
-        for (const auto &asdu : sequence_)
+        // std::vector<Point> points;
+        to.reserve(to.size() + from.size());
+        for (const auto &asdu : from)
         {
             for (auto i = 0; i < unitsPerASDU; ++i)
             {
                 const auto scaleFactor = ((i < unitsPerASDU / 2) ? ampScaleFactor : volScaleFactor);
                 point.values[i] = static_cast<f32>(asdu.data[i].data.instMagI) * scaleFactor;
             }
-            points.push_back(std::move(point));
+            to.push_back(std::move(point));
         }
-        return points;
     }
 };
 

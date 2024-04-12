@@ -24,6 +24,7 @@ private:
     Parser parser;
     Validator validator;
     Exchange *exchange;
+    std::vector<iec::Point> points;
 
     void findMinMax(const std::vector<iec::Point> &points);
 

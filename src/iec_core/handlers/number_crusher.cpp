@@ -6,6 +6,10 @@
 namespace handlers
 {
 
+constexpr auto f32min = std::numeric_limits<f32>::min();
+constexpr auto f32max = std::numeric_limits<f32>::max();
+constexpr auto u64max = std::numeric_limits<u64>::max();
+
 void NumberCrusher::run()
 {
     while (running)
@@ -13,8 +17,12 @@ void NumberCrusher::run()
         exchange->get(buffer);
         auto sequence { parser.parse(buffer) };
         validator.update(sequence);
-        auto points { parser.convert(sequence) };
-        findMinMax(points);
+        parser.convert(sequence, points);
+        if (points.size() > 512)
+        {
+            findMinMax(points);
+            points.clear();
+        }
     }
 }
 
@@ -28,9 +36,6 @@ void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
     static std::size_t count = 1;
 
     constexpr auto size = iec::unitsPerASDU;
-    constexpr auto f32min = std::numeric_limits<f32>::min();
-    constexpr auto f32max = std::numeric_limits<f32>::max();
-    constexpr auto u64max = std::numeric_limits<u64>::max();
 
     // определяем минимальные и максимальные значения всех сигналов
     std::array<f32, size> minArray, maxArray;
@@ -77,10 +82,13 @@ void NumberCrusher::findMinMax(const std::vector<iec::Point> &points)
         }
     }
 
+    // не найден первый переход через ноль!
     if (periods[0] == u64max)
         return;
+    // нет противоположного перехода через ноль (велик последний полупериод)!
     if (periods[1] == u64max)
         return;
+    // нет второго одноименного перехода через ноль (велик период)!
     if (periods[2] == u64max)
         return;
 
