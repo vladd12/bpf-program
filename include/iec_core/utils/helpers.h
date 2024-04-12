@@ -8,18 +8,6 @@
 namespace utils
 {
 
-constexpr auto BUFFER_SIZE = 2048; ///< Default buffer size
-
-/// \brief Structure for storage a data buffer.
-struct Buffer
-{
-    std::uint8_t *data = nullptr;
-    std::size_t allocSize = BUFFER_SIZE;
-    std::size_t readSize = 0;
-
-    constexpr Buffer() noexcept = default;
-};
-
 /// \brief Reading the file specified by the file stream to the string.
 std::string read_file(std::ifstream &stream);
 

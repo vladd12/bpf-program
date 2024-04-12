@@ -134,21 +134,4 @@ public:
     }
 };
 
-/// TODO?
-// struct StaticBufferRef
-//{
-// public:
-//    using value_type = u8;
-//    using size_type = std::size_t;
-//    using pointer = value_type *;
-// private:
-//    pointer data;
-//    size_type size, offset;
-// public:
-//    template <std::size_t size> //
-//    explicit StaticBufferRef(StaticBuffer<size> &buffer, size_type size_) noexcept : data(buffer.get()), size(size_), offset(0)
-//    {
-//    }
-//};
-
 } // namespace utils
