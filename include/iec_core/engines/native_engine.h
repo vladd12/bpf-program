@@ -13,7 +13,7 @@ private:
 public:
     explicit NativeEngine();
 
-    bool setup(const EngineSettings &settings) override;
+    bool setup(const EngineSettings &settings);
     void run() override;
 };
 

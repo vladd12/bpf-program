@@ -13,17 +13,20 @@ namespace utils
 template <typename T> //
 struct ValueExchange
 {
+public:
+    using buffer_t = T; ///< Buffer data type.
+
 private:
-    std::array<std::optional<T>, 3> storage;
-    std::optional<T> *set_buffer = &storage[0];
-    std::atomic<std::optional<T> *> buffer = &storage[1];
-    std::optional<T> *get_buffer = &storage[2];
+    std::array<std::optional<buffer_t>, 3> storage;
+    std::optional<buffer_t> *set_buffer = &storage[0];
+    std::atomic<std::optional<buffer_t> *> buffer = &storage[1];
+    std::optional<buffer_t> *get_buffer = &storage[2];
 
 public:
     explicit ValueExchange() = default;
 
     /// \brief Lock-free setting value.
-    bool set(T &&value) noexcept
+    bool set(buffer_t &&value) noexcept
     {
         if (!set_buffer->has_value())
         {
@@ -39,11 +42,11 @@ public:
     template <typename... Ts> //
     bool set(Ts &&...args) noexcept
     {
-        return set(std::move(T { std::forward<Ts>(args)... }));
+        return set(std::move(buffer_t { std::forward<Ts>(args)... }));
     }
 
     /// \brief Lock-free getting value.
-    bool get(T &value) noexcept
+    bool get(buffer_t &value) noexcept
     {
         get_buffer = buffer.exchange(get_buffer);
         if (get_buffer->has_value())
@@ -61,8 +64,11 @@ public:
 template <typename T> //
 struct ValueExchangeBlocking
 {
+public:
+    using buffer_t = T; ///< Buffer data type.
+
 private:
-    T storage;
+    buffer_t storage;
     std::mutex accessor;
     std::condition_variable waiter;
     bool isFilled;
@@ -72,7 +78,7 @@ public:
     {
     }
 
-    void get(T &value)
+    void get(buffer_t &value)
     {
         // wait if not filled yet
         if (!isFilled)
@@ -87,7 +93,7 @@ public:
         waiter.notify_one();
     }
 
-    void set(T &&value)
+    void set(buffer_t &&value)
     {
         // wait if already filled
         if (isFilled)

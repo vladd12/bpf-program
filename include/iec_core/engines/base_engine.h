@@ -1,5 +1,6 @@
 #pragma once
 
+//#include <iec_core/utils/meta.h>
 #include <string_view>
 
 namespace engines
@@ -20,7 +21,6 @@ protected:
 public:
     explicit BaseEngine() = default;
 
-    virtual bool setup(const EngineSettings &settings) = 0;
     virtual void run() = 0;
 
     void stop() noexcept
@@ -30,3 +30,28 @@ public:
 };
 
 } // namespace engines
+
+template <typename ValueExchangeType> //
+class BaseRunnable
+{
+public:
+    using Exchange = ValueExchangeType;
+    using Buffer = typename Exchange::buffer_t;
+
+protected:
+    bool running;
+
+public:
+    explicit BaseRunnable() noexcept : running(true)
+    {
+        /// TODO: ValueExchangeType != placeholder_t
+        // static_assert (, "");
+    }
+
+    virtual void run() = 0;
+
+    void stop() noexcept
+    {
+        running = false;
+    }
+};

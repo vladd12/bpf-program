@@ -27,7 +27,7 @@ private:
 public:
     explicit BPFEngine();
 
-    bool setup(const EngineSettings &settings) override;
+    bool setup(const EngineSettings &settings);
     void run() override;
 
     void setExchange(Exchange &exchange_) noexcept
