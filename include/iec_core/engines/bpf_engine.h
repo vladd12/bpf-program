@@ -10,6 +10,7 @@ namespace engines
 
 constexpr auto buffer_size = 8192;
 
+/// \brief BPF engine/runner for fast gettings packets from the network.
 template <typename ValueExchangeType> //
 class BPFEngine final : public BaseRunnable<ValueExchangeType>
 {
@@ -29,6 +30,7 @@ public:
     {
     }
 
+    /// \brief Setup engine with passing some settings.
     bool setup(const EngineSettings &settings)
     {
         executor.filterSourceCode(settings.iface.data(), settings.sourceMAC.data(), settings.svID.data());
@@ -49,6 +51,7 @@ public:
         return false;
     }
 
+    /// \brief Runs BPF engine for getting data from the network in event loop.
     void run() override
     {
         while (this->running)

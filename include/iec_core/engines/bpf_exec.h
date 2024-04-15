@@ -3,6 +3,7 @@
 #include <bcc/BPF.h>
 #include <iec_core/utils/code_formater.h>
 
+/// \brief Class for compiling and loading BPF program.
 class BPFExecutor
 {
 private:

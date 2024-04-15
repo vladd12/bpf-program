@@ -5,7 +5,8 @@
 namespace engines
 {
 
-template <typename ValueExchangeType = utils::placeholder_t> //
+/// \brief The native network filter for input data.
+template <typename ValueExchangeType> //
 class NativeEngine : public BaseRunnable<ValueExchangeType>
 {
 private:

@@ -3,6 +3,7 @@
 namespace engines
 {
 
+/// \brief Engine with using pcap library.
 class PCAPEngine
 {
 public:

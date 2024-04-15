@@ -9,6 +9,7 @@
 namespace handlers
 {
 
+/// \brief The handler for processing passed from an engine data.
 template <typename ValueExchangeType> //
 class NumberCrusher final : public BaseRunnable<ValueExchangeType>
 {
@@ -28,6 +29,7 @@ private:
 public:
     explicit NumberCrusher() = default;
 
+    /// \brief Runs handler for waiting data from the engine.
     void run() override
     {
         while (this->running)

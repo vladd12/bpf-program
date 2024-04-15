@@ -14,6 +14,7 @@ struct EngineSettings
 
 } // namespace engines
 
+/// \brief Base class for runnable objects.
 template <typename ValueExchangeType> //
 class BaseRunnable
 {
@@ -30,13 +31,16 @@ public:
     {
     }
 
+    /// \brief Starts the execution flow for the runnable object.
     virtual void run() = 0;
 
+    /// \brief Stops the running thread.
     void stop() noexcept
     {
         running = false;
     }
 
+    /// \brief Setup value-exchange data structure for data sharing between threads.
     void setExchange(Exchange &exchange_) noexcept
     {
         exchange = &exchange_;
