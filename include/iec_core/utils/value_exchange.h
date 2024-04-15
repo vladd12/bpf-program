@@ -3,6 +3,7 @@
 #include <array>
 #include <atomic>
 #include <condition_variable>
+#include <iec_core/utils/meta.h>
 #include <mutex>
 #include <optional>
 
@@ -61,7 +62,7 @@ public:
 };
 
 /// \brief Value-exchange data structure with mutex blocking.
-template <typename T> //
+template <typename T = utils::placeholder_t> //
 struct ValueExchangeBlocking
 {
 public:
@@ -76,6 +77,7 @@ private:
 public:
     explicit ValueExchangeBlocking() : isFilled(false)
     {
+        static_assert(!std::is_same_v<T, utils::placeholder_t>, "Detected placeholder, use real type!");
     }
 
     void get(buffer_t &value)

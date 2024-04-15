@@ -1,19 +1,26 @@
 #pragma once
 
-#include <iec_core/engines/bpf_engine.h>
-#include <iec_core/handlers/number_crusher.h>
+#include <iec_core/engines/base_engine.h>
 #include <memory>
 #include <thread>
 
 namespace pipeline
 {
 
-// template <typename Engine, typename Handler, typename Exchange> //
+template <typename BufferType, typename ExchangeType, typename EngineType, typename HandlerType> //
 class PipelineBuilder
 {
-    engines::BPFEngine engine;
-    handlers::NumberCrusher handler;
-    engines::BPFEngine::Exchange exchange;
+public:
+    // Types
+    using Buffer = BufferType;
+    using Exchange = utils::rebind_t<ExchangeType, Buffer>;
+    using Engine = utils::rebind_t<EngineType, Exchange>;
+    using Handler = utils::rebind_t<HandlerType, Exchange>;
+
+private:
+    Engine engine;
+    Handler handler;
+    Exchange exchange;
     std::thread engineThread;
     std::thread handlerThread;
 

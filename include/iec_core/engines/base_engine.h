@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <iec_core/utils/meta.h>
+#include <iec_core/utils/meta.h>
 #include <string_view>
 
 namespace engines
@@ -13,21 +13,18 @@ struct EngineSettings
     std::string_view svID;      // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
 };
 
-class BaseEngine
-{
-protected:
-    bool running = true;
-
-public:
-    explicit BaseEngine() = default;
-
-    virtual void run() = 0;
-
-    void stop() noexcept
-    {
-        running = false;
-    }
-};
+// class BaseEngine
+//{
+// protected:
+//    bool running = true;
+// public:
+//    explicit BaseEngine() = default;
+//    virtual void run() = 0;
+//    void stop() noexcept
+//    {
+//        running = false;
+//    }
+//};
 
 } // namespace engines
 
@@ -38,14 +35,13 @@ public:
     using Exchange = ValueExchangeType;
     using Buffer = typename Exchange::buffer_t;
 
-protected:
+    // protected:
     bool running;
 
 public:
     explicit BaseRunnable() noexcept : running(true)
     {
-        /// TODO: ValueExchangeType != placeholder_t
-        // static_assert (, "");
+        static_assert(!std::is_same_v<Exchange, utils::placeholder_t>, "Detected placeholder, use real type!");
     }
 
     virtual void run() = 0;

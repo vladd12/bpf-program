@@ -3,21 +3,21 @@
 namespace engines
 {
 
-NativeEngine::NativeEngine()
-{
-    ;
-}
+// NativeEngine::NativeEngine()
+//{
+//    ;
+//}
 
-bool NativeEngine::setup(const EngineSettings &settings)
-{
-    (void)(settings);
-    temp = 1;
-    return false;
-}
+// bool NativeEngine::setup(const EngineSettings &settings)
+//{
+//    (void)(settings);
+//    temp = 1;
+//    return false;
+//}
 
-void NativeEngine::run()
-{
-    ;
-}
+// void NativeEngine::run()
+//{
+//    ;
+//}
 
 } // namespace engines

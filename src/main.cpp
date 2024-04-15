@@ -1,5 +1,9 @@
+#include <iec_core/engines/bpf_engine.h>
+#include <iec_core/handlers/number_crusher.h>
 #include <iec_core/pipeline_builder.h>
-#include <iostream>
+#include <iec_core/utils/buffer.h>
+#include <iec_core/utils/value_exchange.h>
+//#include <iostream>
 #include <string>
 
 void inputData(std::string &iface, std::string &srcMac, std::string &svID)
@@ -20,7 +24,13 @@ int main()
     std::string svID = "ENS80pointMU01";       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
     // inputData(ifaceName, srcMacAddr, svID);
 
-    pipeline::PipelineBuilder builder;
+    pipeline::PipelineBuilder<          //
+        utils::StaticBuffer<8192>,      //
+        utils::ValueExchangeBlocking<>, //
+        engines::BPFEngine<>,           //
+        handlers::NumberCrusher<>       //
+        >
+        builder;
     builder.run({ ifaceName, srcMacAddr, svID });
     builder.wait();
     return 0;

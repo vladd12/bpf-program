@@ -3,20 +3,21 @@
 #include <iec_core/engines/base_engine.h>
 #include <iec_core/engines/bpf_exec.h>
 #include <iec_core/utils/socket.h>
-#include <iec_core/utils/value_exchange.h>
+#include <iostream>
 
 namespace engines
 {
 
 constexpr auto buffer_size = 8192;
 
-class BPFEngine final : public BaseEngine
+template <typename ValueExchangeType = utils::placeholder_t> //
+class BPFEngine final : public BaseRunnable<ValueExchangeType>
 {
 public:
     // Types
-    using Buffer = utils::StaticBuffer<buffer_size>;
+    using Exchange = ValueExchangeType;
+    using Buffer = typename Exchange::buffer_t;
     using Socket = utils::Socket;
-    using Exchange = utils::ValueExchangeBlocking<Buffer>;
 
 private:
     Buffer buffer;
@@ -25,10 +26,42 @@ private:
     Exchange *exchange;
 
 public:
-    explicit BPFEngine();
+    explicit BPFEngine() : BaseRunnable<ValueExchangeType>(), executor("bpf/ethernet-parse.c"), socket()
+    {
+    }
 
-    bool setup(const EngineSettings &settings);
-    void run() override;
+    bool setup(const EngineSettings &settings)
+    {
+        executor.filterSourceCode(settings.iface.data(), settings.sourceMAC.data(), settings.svID.data());
+        auto status = executor.load();
+        if (status.ok())
+        {
+            int socket_fd = -1;
+            status = executor.getDeviceSocket(socket_fd, "iec61850_filter", settings.iface.data());
+            if (status.ok() && socket_fd >= 0)
+            {
+                socket.setHandle(socket_fd);
+                if (!socket.setNonBlockingMode())
+                    std::cout << "Couldn't set non-blocking read mode for socket!\n";
+                return true;
+            }
+        }
+        std::cout << status.msg() << '\n';
+        return false;
+    }
+
+    void run() override
+    {
+        while (this->running)
+        {
+            socket.readTo(buffer);
+            if (buffer.getFreeSize() < 800)
+            {
+                exchange->set(std::move(buffer));
+                buffer.reset();
+            }
+        }
+    }
 
     void setExchange(Exchange &exchange_) noexcept
     {
