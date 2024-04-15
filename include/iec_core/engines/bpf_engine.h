@@ -23,7 +23,6 @@ private:
     Buffer buffer;
     BPFExecutor executor;
     Socket socket;
-    Exchange *exchange;
 
 public:
     explicit BPFEngine() : BaseRunnable<ValueExchangeType>(), executor("bpf/ethernet-parse.c"), socket()
@@ -57,15 +56,10 @@ public:
             socket.readTo(buffer);
             if (buffer.getFreeSize() < 800)
             {
-                exchange->set(std::move(buffer));
+                this->exchange->set(std::move(buffer));
                 buffer.reset();
             }
         }
-    }
-
-    void setExchange(Exchange &exchange_) noexcept
-    {
-        exchange = &exchange_;
     }
 };
 

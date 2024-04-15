@@ -22,12 +22,12 @@ option(BUILD_PCAP_ENGINE "Building pcap engine" ON)
 # Collecting sources of project
 set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/pipeline_builder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/algo/processing.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/base_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/native_engine.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/byte_op.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/iec_parser.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/iec/validator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/handlers/base_handler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/handlers/number_crusher.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/code_formater.h
@@ -38,10 +38,9 @@ set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/value_exchange.h
 )
 set(iec_core_cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/native_engine.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/algo/processing.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/byte_op.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/iec/validator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/handlers/number_crusher.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/code_formater.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/fast_file.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/utils/helpers.cpp
@@ -69,7 +68,6 @@ if(BUILD_BPF_ENGINE)
     ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/engines/bpf_exec.h
   )
   list(APPEND iec_core_cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_engine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/iec_core/engines/bpf_exec.cpp
   )
 endif()

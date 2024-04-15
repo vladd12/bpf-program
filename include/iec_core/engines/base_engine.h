@@ -13,19 +13,6 @@ struct EngineSettings
     std::string_view svID;      // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
 };
 
-// class BaseEngine
-//{
-// protected:
-//    bool running = true;
-// public:
-//    explicit BaseEngine() = default;
-//    virtual void run() = 0;
-//    void stop() noexcept
-//    {
-//        running = false;
-//    }
-//};
-
 } // namespace engines
 
 template <typename ValueExchangeType> //
@@ -35,8 +22,9 @@ public:
     using Exchange = ValueExchangeType;
     using Buffer = typename Exchange::buffer_t;
 
-    // protected:
+protected:
     bool running;
+    Exchange *exchange;
 
 public:
     explicit BaseRunnable() noexcept : running(true)
@@ -49,5 +37,10 @@ public:
     void stop() noexcept
     {
         running = false;
+    }
+
+    void setExchange(Exchange &exchange_) noexcept
+    {
+        exchange = &exchange_;
     }
 };
