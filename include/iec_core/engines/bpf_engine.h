@@ -10,7 +10,7 @@ namespace engines
 
 constexpr auto buffer_size = 8192;
 
-template <typename ValueExchangeType = utils::placeholder_t> //
+template <typename ValueExchangeType> //
 class BPFEngine final : public BaseRunnable<ValueExchangeType>
 {
 public:

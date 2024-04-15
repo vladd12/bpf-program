@@ -9,7 +9,7 @@
 namespace handlers
 {
 
-template <typename ValueExchangeType = utils::placeholder_t> //
+template <typename ValueExchangeType> //
 class NumberCrusher final : public BaseRunnable<ValueExchangeType>
 {
 public:

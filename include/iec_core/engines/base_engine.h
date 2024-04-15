@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iec_core/utils/meta.h>
 #include <string_view>
 
 namespace engines
@@ -29,7 +28,6 @@ protected:
 public:
     explicit BaseRunnable() noexcept : running(true)
     {
-        static_assert(!std::is_same_v<Exchange, utils::placeholder_t>, "Detected placeholder, use real type!");
     }
 
     virtual void run() = 0;

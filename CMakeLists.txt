@@ -33,7 +33,6 @@ set(iec_core_h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/code_formater.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/fast_file.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/helpers.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/meta.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/socket.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/iec_core/utils/value_exchange.h
 )

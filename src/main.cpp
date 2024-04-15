@@ -24,13 +24,11 @@ int main()
     std::string svID = "ENS80pointMU01";       // ENS80pointMU01 - 80p, ENS256MUnn01 - 256p
     // inputData(ifaceName, srcMacAddr, svID);
 
-    pipeline::PipelineBuilder<          //
-        utils::StaticBuffer<8192>,      //
-        utils::ValueExchangeBlocking<>, //
-        engines::BPFEngine<>,           //
-        handlers::NumberCrusher<>       //
-        >
-        builder;
+    using Buffer = utils::StaticBuffer<8192>;
+    using Exchange = utils::ValueExchangeBlocking<Buffer>;
+    using Engine = engines::BPFEngine<Exchange>;
+    using Handler = handlers::NumberCrusher<Exchange>;
+    pipeline::PipelineBuilder<Exchange, Engine, Handler> builder;
     builder.run({ ifaceName, srcMacAddr, svID });
     builder.wait();
     return 0;

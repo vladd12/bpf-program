@@ -7,20 +7,13 @@
 namespace pipeline
 {
 
-template <typename BufferType, typename ExchangeType, typename EngineType, typename HandlerType> //
+template <typename ExchangeType, typename EngineType, typename HandlerType> //
 class PipelineBuilder
 {
-public:
-    // Types
-    using Buffer = BufferType;
-    using Exchange = utils::rebind_t<ExchangeType, Buffer>;
-    using Engine = utils::rebind_t<EngineType, Exchange>;
-    using Handler = utils::rebind_t<HandlerType, Exchange>;
-
 private:
-    Engine engine;
-    Handler handler;
-    Exchange exchange;
+    EngineType engine;
+    HandlerType handler;
+    ExchangeType exchange;
     std::thread engineThread;
     std::thread handlerThread;
 
