@@ -11,7 +11,7 @@ namespace utils
 
 /// \brief Lock-free value-exchange data structure.
 template <typename T> //
-struct ValueExchange
+struct ValueExchangeLockFree
 {
 public:
     using buffer_t = T; ///< Buffer data type.
@@ -23,7 +23,7 @@ private:
     std::optional<buffer_t> *get_buffer = &storage[2];
 
 public:
-    explicit ValueExchange() = default;
+    explicit ValueExchangeLockFree() = default;
 
     /// \brief Lock-free setting value.
     bool set(buffer_t &&value) noexcept
